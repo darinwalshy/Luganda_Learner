@@ -1,6 +1,6 @@
 // 1. Your Custom Luganda Word List
 const wordList = [
-    { luganda: "Oli otya?", english: "How are you?5.1" },
+    { luganda: "Oli otya?", english: "How are you?6" },
     { luganda: "Gyebale ko", english: "Well done / Hello" },
     { luganda: "Weebale", english: "Thank you" },
     { luganda: "Ssebo", english: "Sir / Gentleman" },
