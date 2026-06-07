@@ -26,7 +26,9 @@
         header {
             text-align: center;
             margin-top: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 400px;
         }
 
         header h1 {
@@ -35,9 +37,28 @@
             margin-bottom: 5px;
         }
 
-        header p {
-            color: #64748b;
+        /* Category Dropdown Styling */
+        .selector-container {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .category-select {
+            width: 100%;
+            padding: 14px;
             font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            border: 2px solid #cbd5e1;
+            background-color: white;
+            color: #1e3a8a;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .category-select:focus {
+            border-color: #1e3a8a;
         }
 
         .app-container {
@@ -67,12 +88,10 @@
             border-radius: 20px;
         }
 
-        /* Toggled via JavaScript click */
         .flashcard.is-flipped {
             transform: rotateY(180deg);
         }
 
-        /* Card Sides setup */
         .card-side {
             position: absolute;
             width: 100%;
@@ -94,9 +113,10 @@
         }
 
         .card-front h2 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 15px;
+            word-break: break-word;
         }
 
         .card-back {
@@ -106,9 +126,10 @@
         }
 
         .card-back h3 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 400;
             opacity: 0.8;
+            word-break: break-word;
         }
 
         .card-back hr {
@@ -119,8 +140,9 @@
         }
 
         .card-back h2 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 600;
+            word-break: break-word;
         }
 
         .hint {
@@ -157,28 +179,42 @@
         .btn:active {
             transform: scale(0.98);
         }
+
+        /* Version Badge Styling */
+        footer {
+            margin-top: auto;
+            padding-top: 40px;
+            padding-bottom: 10px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
 
     <header>
         <h1>Luganda Learner</h1>
-        <p>Tap the card to reveal the translation</p>
+        <div class="selector-container">
+            <select id="categorySelect" class="category-select" onchange="switchCategory(this.value)">
+                <option value="basics">🔗 Core Basics</option>
+                <option value="verbs">🏃 Verbs</option>
+                <option value="nouns">🪑 Nouns</option>
+            </select>
+        </div>
     </header>
 
     <main class="app-container">
         <div class="flashcard-container" id="flashcardContainer">
             <div class="flashcard" id="flashcard">
-                <!-- Front Side -->
                 <div class="card-side card-front">
-                    <h2 id="lugandaFront">Oli otya?</h2>
+                    <h2 id="lugandaFront">Loading...</h2>
                     <span class="hint">Tap to flip</span>
                 </div>
-                <!-- Back Side -->
                 <div class="card-side card-back">
-                    <h3 id="lugandaBack">Oli otya?</h3>
+                    <h3 id="lugandaBack">Loading...</h3>
                     <hr>
-                    <h2 id="englishBack">How are you?</h2>
+                    <h2 id="englishBack">Loading...</h2>
                     <span class="hint">Tap to flip back</span>
                 </div>
             </div>
@@ -189,71 +225,90 @@
         </div>
     </main>
 
+    <footer>
+        App Version: v8
+    </footer>
+
     <script>
-    // This starts empty because we will fill it from our JSON file
-    let wordList = [];
-    let currentWordIndex = 0;
+        // Holds the entire multi-category database from our JSON file
+        let masterDatabase = {};
+        let activeList = [];
+        let currentWordIndex = -1;
 
-    const flashcard = document.getElementById('flashcard');
-    const nextBtn = document.getElementById('nextBtn');
-    const lugandaFront = document.getElementById('lugandaFront');
-    const lugandaBack = document.getElementById('lugandaBack');
-    const englishBack = document.getElementById('englishBack');
+        const flashcard = document.getElementById('flashcard');
+        const nextBtn = document.getElementById('nextBtn');
+        const lugandaFront = document.getElementById('lugandaFront');
+        const lugandaBack = document.getElementById('lugandaBack');
+        const englishBack = document.getElementById('englishBack');
+        const categorySelect = document.getElementById('categorySelect');
 
-    // NEW: Fetch the words from our external files
-    async function loadWords() {
-        try {
-            // Fetch the JSON data file
-            const response = await fetch('words.json');
-            wordList = await response.json();
+        // Fetch master dictionary from external file
+        async function loadMasterData() {
+            try {
+                const response = await fetch('words.json');
+                masterDatabase = await response.json();
+                
+                // Start by loading whatever category the dropdown defaults to
+                switchCategory(categorySelect.value);
+            } catch (error) {
+                console.error("Error loading master dictionary:", error);
+                lugandaFront.textContent = "Offline / Error";
+                lugandaBack.textContent = "Offline / Error";
+                englishBack.textContent = "Connect to network to sync data file.";
+            }
+        }
+
+        // Shifts focus to a specific category list
+        function switchCategory(categoryKey) {
+            if (!masterDatabase[categoryKey]) return;
             
-            // Once loaded, display the first random word
-            getNewWord();
-        } catch (error) {
-            console.error("Error loading the word list:", error);
-            // Friendly local fallback if everything fails
-            wordList = [{ luganda: "Ndi bulungi", english: "I am fine (Error loading list)" }];
+            activeList = masterDatabase[categoryKey];
+            currentWordIndex = -1; // Reset placement
+            
             getNewWord();
         }
-    }
 
-    function getNewWord() {
-        if (wordList.length === 0) return;
-        
-        flashcard.classList.remove('is-flipped');
-        
-        setTimeout(() => {
-            let randomIndex;
-            if (wordList.length > 1) {
-                do {
-                    randomIndex = Math.floor(Math.random() * wordList.length);
-                } while (randomIndex === currentWordIndex);
-            } else {
-                randomIndex = 0;
+        function getNewWord() {
+            if (activeList.length === 0) {
+                lugandaFront.textContent = "Empty Deck";
+                lugandaBack.textContent = "Empty Deck";
+                englishBack.textContent = "No words found in this category.";
+                return;
             }
             
-            currentWordIndex = randomIndex;
-            const currentWord = wordList[currentWordIndex];
+            flashcard.classList.remove('is-flipped');
             
-            lugandaFront.textContent = currentWord.luganda;
-            lugandaBack.textContent = currentWord.luganda;
-            englishBack.textContent = currentWord.english;
-        }, 200);
-    }
+            setTimeout(() => {
+                let randomIndex;
+                if (activeList.length > 1) {
+                    do {
+                        randomIndex = Math.floor(Math.random() * activeList.length);
+                    } while (randomIndex === currentWordIndex);
+                } else {
+                    randomIndex = 0;
+                }
+                
+                currentWordIndex = randomIndex;
+                const currentWord = activeList[currentWordIndex];
+                
+                lugandaFront.textContent = currentWord.luganda;
+                lugandaBack.textContent = currentWord.luganda;
+                englishBack.textContent = currentWord.english;
+            }, 200);
+        }
 
-    flashcard.addEventListener('click', () => {
-        flashcard.classList.toggle('is-flipped');
-    });
+        flashcard.addEventListener('click', () => {
+            flashcard.classList.toggle('is-flipped');
+        });
 
-    nextBtn.addEventListener('click', getNewWord);
+        nextBtn.addEventListener('click', getNewWord);
 
-    // Run the loader function when the page opens
-    window.addEventListener('DOMContentLoaded', loadWords);
+        window.addEventListener('DOMContentLoaded', loadMasterData);
 
-    // Register Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
-</script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
 </body>
 </html>
