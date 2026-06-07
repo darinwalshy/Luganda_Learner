@@ -1,13 +1,13 @@
 // 1. Your Custom Luganda Word List
 const wordList = [
-    { luganda: "Oli otya?", english: "How are you?3" },
-    { luganda: "Gyebale ko", english: "Well done / Hello" },
-    { luganda: "Weebale", english: "Thank you" },
-    { luganda: "Ssebo", english: "Sir / Gentleman" },
-    { luganda: "Nnyabo", english: "Madam / Lady" },
-    { luganda: "Ndi bulungi", english: "I am fine" },
-    { luganda: "Agasubwa?", english: "What's the news?" },
-    { luganda: "Kale", english: "OK / You're welcome" }
+    { luganda: "Oli otya?", english: "How are you?4" },
+    { luganda: "Gyebale ko", english: "Well done / Hello4" },
+    { luganda: "Weebale", english: "Thank you4" },
+    { luganda: "Ssebo", english: "Sir / Gentleman4" },
+    { luganda: "Nnyabo", english: "Madam / Lady4" },
+    { luganda: "Ndi bulungi", english: "I am fine4" },
+    { luganda: "Agasubwa?", english: "What's the news?4" },
+    { luganda: "Kale", english: "OK / You're welcome4" }
 ];
 
 // 2. Track State
