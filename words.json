@@ -1,22 +1,32 @@
-[
-  { "luganda": "ne", "english": "and" },
-  { "luganda": "na", "english": "with" },
-  { "luganda": "naye", "english": "but" },
-  { "luganda": "nedda", "english": "no" },
-  { "luganda": "ye", "english": "yes" },
-  { "luganda": "oba", "english": "or" },
-  { "luganda": "mu", "english": "in/into" },
-  { "luganda": "ku", "english": "of/on" },
-  { "luganda": "eri", "english": "to" },
-  { "luganda": "ddala", "english": "(used for emphasis either before or after the word it is emphasizing)" },
-  { "luganda": "nnyo", "english": "(used for emphasis either before or after the word it is emphasizing)" },
-  { "luganda": "ye", "english": "he/she/is" },
-  { "luganda": "kyabwe / lwabwe / byabwe", "english": "their(s)" },
-  { "luganda": "bye / gwe / bwe", "english": "his/hers" },
-  { "luganda": "bwe", "english": "then/when" },
-  { "luganda": "bwange / yange / gange / gwange / wange", "english": "my/mine" },
-  { "luganda": "nange", "english": "and me/with me" },
-  { "luganda": "nawe", "english": "and you/with you" },
-  { "luganda": "tyo / wo / gwo / bwo", "english": "your" },
-  { "luganda": "yaffe / waffe", "english": "our" }
-]
+{
+  "basics": [
+    { "luganda": "ne", "english": "and" },
+    { "luganda": "na", "english": "with" },
+    { "luganda": "naye", "english": "but" },
+    { "luganda": "nedda", "english": "no" },
+    { "luganda": "ye", "english": "yes" },
+    { "luganda": "oba", "english": "or" },
+    { "luganda": "mu", "english": "in/into" },
+    { "luganda": "ku", "english": "of/on" },
+    { "luganda": "eri", "english": "to" },
+    { "luganda": "ddala", "english": "(used for emphasis either before or after the word it is emphasizing)" },
+    { "luganda": "nnyo", "english": "(used for emphasis either before or after the word it is emphasizing)" },
+    { "luganda": "ye", "english": "he/she/is" },
+    { "luganda": "kyabwe / lwabwe / byabwe", "english": "their(s)" },
+    { "luganda": "bye / gwe / bwe", "english": "his/hers" },
+    { "luganda": "bwe", "english": "then/when" },
+    { "luganda": "bwange / yange / gange / gwange / wange", "english": "my/mine" },
+    { "luganda": "nange", "english": "and me/with me" },
+    { "luganda": "nawe", "english": "and you/with you" },
+    { "luganda": "tyo / wo / gwo / bwo", "english": "your" },
+    { "luganda": "yaffe / waffe", "english": "our" }
+  ],
+  "verbs": [
+    { "luganda": "okukola", "english": "to work / to do" },
+    { "luganda": "okusoma", "english": "to read / to study" }
+  ],
+  "nouns": [
+    { "luganda": "omusomesa", "english": "teacher" },
+    { "luganda": "ntebe", "english": "chair" }
+  ]
+}
