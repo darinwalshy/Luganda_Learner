@@ -61,3 +61,13 @@ nextBtn.addEventListener('click', getNewWord);
 window.addEventListener('DOMContentLoaded', () => {
     getNewWord();
 });
+
+// 6. Register Service Worker for Offline Capabilities
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        // Pointing to sw.js using a relative path so it plays nice with GitHub subfolders
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registered successfully!', reg.scope))
+            .catch(err => console.log('Service Worker registration failed:', err));
+    });
+}
