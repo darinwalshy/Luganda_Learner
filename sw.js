@@ -1,4 +1,4 @@
-const CACHE_NAME = 'luganda-learner-v5.2'; // Matching your version numbering style
+const CACHE_NAME = 'luganda-learner-v6'; // Matching your version numbering style
 const ASSETS = [
   'index.html',
   'style.css',
