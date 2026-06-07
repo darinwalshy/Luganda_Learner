@@ -1,6 +1,5 @@
-const CACHE_NAME = 'luganda-learner-v1.3';
+const CACHE_NAME = 'luganda-learner-v2';
 
-// Explicitly list the local assets we want to keep available offline
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -8,18 +7,19 @@ const ASSETS_TO_CACHE = [
     './app.js'
 ];
 
-// 1. Install Event - Caches the core files right away
+// 1. Install Event - Caches assets and forces the worker to skip the waiting room
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('Caching app shell assets...');
+            console.log('Caching assets...');
             return cache.addAll(ASSETS_TO_CACHE);
         })
     );
+    // Force the waiting service worker to become the active service worker immediately
     self.skipWaiting();
 });
 
-// 2. Activate Event - Cleans up old caches if we update versions later
+// 2. Activate Event - Cleans up old caches and forcefully takes control of the page
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
@@ -33,16 +33,16 @@ self.addEventListener('activate', (event) => {
             );
         })
     );
+    // Forcefully take control of all open tabs right now
     return self.clients.claim();
 });
 
-// 3. Fetch Event - Network-First Strategy (with Cache Fallback)
+// 3. Fetch Event - Always checks the network first for updates, falls back to cache if offline
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        // Always try the network first to get the freshest live version
         fetch(event.request)
             .then((networkResponse) => {
-                // If the network gives us a good response, cache a copy of it dynamically
+                // If network is successful, update the cache with the shiny new files
                 if (networkResponse && networkResponse.status === 200) {
                     const responseToCache = networkResponse.clone();
                     caches.open(CACHE_NAME).then((cache) => {
@@ -52,7 +52,7 @@ self.addEventListener('fetch', (event) => {
                 return networkResponse;
             })
             .catch(() => {
-                // If the network is unavailable (offline), instantly fall back to the cache
+                // If network fails (offline), pull instantly from local cache
                 return caches.match(event.request);
             })
     );
