@@ -1,6 +1,6 @@
 // 1. Your Custom Luganda Word List
 const wordList = [
-    { luganda: "Oli otya?", english: "How are you?2" },
+    { luganda: "Oli otya?", english: "How are you?3" },
     { luganda: "Gyebale ko", english: "Well done / Hello" },
     { luganda: "Weebale", english: "Thank you" },
     { luganda: "Ssebo", english: "Sir / Gentleman" },
@@ -62,25 +62,40 @@ window.addEventListener('DOMContentLoaded', () => {
     getNewWord();
 });
 
-// 6. Register Service Worker with Auto-Update Logic
+// 6. Register Service Worker with Aggressive Auto-Reload Logic
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
             .then(reg => {
-                console.log('Service Worker registered!');
+                console.log('Service Worker registered successfully!');
 
-                // Check if a new service worker is waiting to take over
+                // If there's a new worker waiting already, kick it into gear
+                if (reg.waiting) {
+                    reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+
+                // Listen for any brand-new service worker installing
                 reg.addEventListener('updatefound', () => {
-                    const newWorker = reg.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        // If the new worker finishes installing, force it to activate
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('New content available! Please refresh.');
-                            // Optional: You could pop up a small message to the user here
+                    const installingWorker = reg.installing;
+                    installingWorker.addEventListener('statechange', () => {
+                        if (installingWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                // New content found! The worker will activate automatically
+                                console.log('New update installed.');
+                            }
                         }
                     });
                 });
             })
             .catch(err => console.log('Registration failed:', err));
+    });
+
+    // This is the magic trigger: when the new service worker takes over, reload the window automatically
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+        }
     });
 }
