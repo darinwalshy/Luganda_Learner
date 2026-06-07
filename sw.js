@@ -1,4 +1,4 @@
-const CACHE_NAME = 'luganda-learner-v1.1';
+const CACHE_NAME = 'luganda-learner-v1.2';
 
 // Explicitly list the local assets we want to keep available offline
 const ASSETS_TO_CACHE = [
