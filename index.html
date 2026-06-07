@@ -4,7 +4,160 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Luganda Learner</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Clean, modern resets */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: #1e3a8a;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        /* 3D Flashcard Wrapper */
+        .flashcard-container {
+            width: 100%;
+            height: 280px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            border-radius: 20px;
+        }
+
+        /* Toggled via JavaScript click */
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* Card Sides setup */
+        .card-side {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card-front {
+            background-color: #ffffff;
+            color: #1e293b;
+        }
+
+        .card-front h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .card-back {
+            background-color: #1e3a8a;
+            color: #ffffff;
+            transform: rotateY(180deg);
+        }
+
+        .card-back h3 {
+            font-size: 1.3rem;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        .card-back hr {
+            width: 40%;
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            margin: 15px 0;
+        }
+
+        .card-back h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+        }
+
+        .controls {
+            width: 100%;
+        }
+
+        .btn {
+            width: 100%;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #059669;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+    </style>
 </head>
 <body>
 
@@ -14,7 +167,6 @@
     </header>
 
     <main class="app-container">
-        <!-- The Flashcard -->
         <div class="flashcard-container" id="flashcardContainer">
             <div class="flashcard" id="flashcard">
                 <!-- Front Side -->
@@ -32,12 +184,68 @@
             </div>
         </div>
 
-        <!-- Controls -->
         <div class="controls">
             <button id="nextBtn" class="btn">Next Word &rarr;</button>
         </div>
     </main>
 
-    <script src="app.js"></script>
+    <script>
+        // Your Master Word List
+        const wordList = [
+            { luganda: "Oli otya?", english: "How are you7?" },
+            { luganda: "Gyebale ko", english: "Well done / Hello" },
+            { luganda: "Weebale", english: "Thank you" },
+            { luganda: "Ssebo", english: "Sir / Gentleman" },
+            { luganda: "Nnyabo", english: "Madam / Lady" },
+            { luganda: "Ndi bulungi", english: "I am fine" },
+            { luganda: "Agasubwa?", english: "What's the news?" },
+            { luganda: "Kale", english: "OK / You're welcome" }
+        ];
+
+        let currentWordIndex = 0;
+
+        const flashcard = document.getElementById('flashcard');
+        const nextBtn = document.getElementById('nextBtn');
+        const lugandaFront = document.getElementById('lugandaFront');
+        const lugandaBack = document.getElementById('lugandaBack');
+        const englishBack = document.getElementById('englishBack');
+
+        function getNewWord() {
+            flashcard.classList.remove('is-flipped');
+            
+            setTimeout(() => {
+                let randomIndex;
+                if (wordList.length > 1) {
+                    do {
+                        randomIndex = Math.floor(Math.random() * wordList.length);
+                    } while (randomIndex === currentWordIndex);
+                } else {
+                    randomIndex = 0;
+                }
+                
+                currentWordIndex = randomIndex;
+                const currentWord = wordList[currentWordIndex];
+                
+                lugandaFront.textContent = currentWord.luganda;
+                lugandaBack.textContent = currentWord.luganda;
+                englishBack.textContent = currentWord.english;
+            }, 200);
+        }
+
+        flashcard.addEventListener('click', () => {
+            flashcard.classList.toggle('is-flipped');
+        });
+
+        nextBtn.addEventListener('click', getNewWord);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            getNewWord();
+        });
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
 </body>
 </html>
