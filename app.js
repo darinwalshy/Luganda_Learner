@@ -62,12 +62,25 @@ window.addEventListener('DOMContentLoaded', () => {
     getNewWord();
 });
 
-// 6. Register Service Worker for Offline Capabilities
+// 6. Register Service Worker with Auto-Update Logic
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        // Pointing to sw.js using a relative path so it plays nice with GitHub subfolders
         navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registered successfully!', reg.scope))
-            .catch(err => console.log('Service Worker registration failed:', err));
+            .then(reg => {
+                console.log('Service Worker registered!');
+
+                // Check if a new service worker is waiting to take over
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        // If the new worker finishes installing, force it to activate
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('New content available! Please refresh.');
+                            // Optional: You could pop up a small message to the user here
+                        }
+                    });
+                });
+            })
+            .catch(err => console.log('Registration failed:', err));
     });
 }
