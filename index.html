@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luganda Learner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Luganda Learner</h1>
+        <p>Tap the card to reveal the translation</p>
+    </header>
+
+    <main class="app-container">
+        <!-- The Flashcard -->
+        <div class="flashcard-container" id="flashcardContainer">
+            <div class="flashcard" id="flashcard">
+                <!-- Front Side -->
+                <div class="card-side card-front">
+                    <h2 id="lugandaFront">Oli otya?</h2>
+                    <span class="hint">Tap to flip</span>
+                </div>
+                <!-- Back Side -->
+                <div class="card-side card-back">
+                    <h3 id="lugandaBack">Oli otya?</h3>
+                    <hr>
+                    <h2 id="englishBack">How are you?</h2>
+                    <span class="hint">Tap to flip back</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button id="nextBtn" class="btn">Next Word &rarr;</button>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
