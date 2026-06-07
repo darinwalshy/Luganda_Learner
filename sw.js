@@ -1,6 +1,7 @@
-const CACHE_NAME = 'luganda-learner-v9';
+const CACHE_NAME = 'luganda-learner-v10';
 const ASSETS = [
-  'index.html'
+  'index.html',
+  'words.json'
 ];
 
 // Install event
