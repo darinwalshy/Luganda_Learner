@@ -1,13 +1,10 @@
-const CACHE_NAME = 'luganda-learner-v6'; // Matching your version numbering style
+const CACHE_NAME = 'luganda-learner-v7';
 const ASSETS = [
-  'index.html',
-  'style.css',
-  'app.js'
+  'index.html'
 ];
 
 // Install event
 self.addEventListener('install', (event) => {
-  // Forces the waiting service worker to become the active service worker
   self.skipWaiting(); 
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -16,7 +13,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event - Cleans up old caches automatically
+// Activate event
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
