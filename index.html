@@ -190,62 +190,70 @@
     </main>
 
     <script>
-        // Your Master Word List
-        const wordList = [
-            { luganda: "Oli otya?", english: "How are you9?" },
-            { luganda: "Gyebale ko", english: "Well done / Hello" },
-            { luganda: "Weebale", english: "Thank you" },
-            { luganda: "Ssebo", english: "Sir / Gentleman" },
-            { luganda: "Nnyabo", english: "Madam / Lady" },
-            { luganda: "Ndi bulungi", english: "I am fine" },
-            { luganda: "Agasubwa?", english: "What's the news?" },
-            { luganda: "Kale", english: "OK / You're welcome" }
-        ];
+    // This starts empty because we will fill it from our JSON file
+    let wordList = [];
+    let currentWordIndex = 0;
 
-        let currentWordIndex = 0;
+    const flashcard = document.getElementById('flashcard');
+    const nextBtn = document.getElementById('nextBtn');
+    const lugandaFront = document.getElementById('lugandaFront');
+    const lugandaBack = document.getElementById('lugandaBack');
+    const englishBack = document.getElementById('englishBack');
 
-        const flashcard = document.getElementById('flashcard');
-        const nextBtn = document.getElementById('nextBtn');
-        const lugandaFront = document.getElementById('lugandaFront');
-        const lugandaBack = document.getElementById('lugandaBack');
-        const englishBack = document.getElementById('englishBack');
-
-        function getNewWord() {
-            flashcard.classList.remove('is-flipped');
+    // NEW: Fetch the words from our external files
+    async function loadWords() {
+        try {
+            // Fetch the JSON data file
+            const response = await fetch('words.json');
+            wordList = await response.json();
             
-            setTimeout(() => {
-                let randomIndex;
-                if (wordList.length > 1) {
-                    do {
-                        randomIndex = Math.floor(Math.random() * wordList.length);
-                    } while (randomIndex === currentWordIndex);
-                } else {
-                    randomIndex = 0;
-                }
-                
-                currentWordIndex = randomIndex;
-                const currentWord = wordList[currentWordIndex];
-                
-                lugandaFront.textContent = currentWord.luganda;
-                lugandaBack.textContent = currentWord.luganda;
-                englishBack.textContent = currentWord.english;
-            }, 200);
-        }
-
-        flashcard.addEventListener('click', () => {
-            flashcard.classList.toggle('is-flipped');
-        });
-
-        nextBtn.addEventListener('click', getNewWord);
-
-        window.addEventListener('DOMContentLoaded', () => {
+            // Once loaded, display the first random word
             getNewWord();
-        });
-
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+        } catch (error) {
+            console.error("Error loading the word list:", error);
+            // Friendly local fallback if everything fails
+            wordList = [{ luganda: "Ndi bulungi", english: "I am fine (Error loading list)" }];
+            getNewWord();
         }
-    </script>
+    }
+
+    function getNewWord() {
+        if (wordList.length === 0) return;
+        
+        flashcard.classList.remove('is-flipped');
+        
+        setTimeout(() => {
+            let randomIndex;
+            if (wordList.length > 1) {
+                do {
+                    randomIndex = Math.floor(Math.random() * wordList.length);
+                } while (randomIndex === currentWordIndex);
+            } else {
+                randomIndex = 0;
+            }
+            
+            currentWordIndex = randomIndex;
+            const currentWord = wordList[currentWordIndex];
+            
+            lugandaFront.textContent = currentWord.luganda;
+            lugandaBack.textContent = currentWord.luganda;
+            englishBack.textContent = currentWord.english;
+        }, 200);
+    }
+
+    flashcard.addEventListener('click', () => {
+        flashcard.classList.toggle('is-flipped');
+    });
+
+    nextBtn.addEventListener('click', getNewWord);
+
+    // Run the loader function when the page opens
+    window.addEventListener('DOMContentLoaded', loadWords);
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+</script>
 </body>
 </html>
