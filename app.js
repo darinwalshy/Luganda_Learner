@@ -1,13 +1,13 @@
 // 1. Your Custom Luganda Word List
 const wordList = [
-    { luganda: "Oli otya?", english: "How are you?4" },
-    { luganda: "Gyebale ko", english: "Well done / Hello4" },
-    { luganda: "Weebale", english: "Thank you4" },
-    { luganda: "Ssebo", english: "Sir / Gentleman4" },
-    { luganda: "Nnyabo", english: "Madam / Lady4" },
-    { luganda: "Ndi bulungi", english: "I am fine4" },
-    { luganda: "Agasubwa?", english: "What's the news?4" },
-    { luganda: "Kale", english: "OK / You're welcome4" }
+    { luganda: "Oli otya?", english: "How are you?5" },
+    { luganda: "Gyebale ko", english: "Well done / Hello5" },
+    { luganda: "Weebale", english: "Thank you5" },
+    { luganda: "Ssebo", english: "Sir / Gentleman5" },
+    { luganda: "Nnyabo", english: "Madam / Lady5" },
+    { luganda: "Ndi bulungi", english: "I am fine5" },
+    { luganda: "Agasubwa?", english: "What's the news?5" },
+    { luganda: "Kale", english: "OK / You're welcome5" }
 ];
 
 // 2. Track State
@@ -62,40 +62,11 @@ window.addEventListener('DOMContentLoaded', () => {
     getNewWord();
 });
 
-// 6. Register Service Worker with Aggressive Auto-Reload Logic
+// 6. Register Service Worker for Offline Capabilities
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => {
-                console.log('Service Worker registered successfully!');
-
-                // If there's a new worker waiting already, kick it into gear
-                if (reg.waiting) {
-                    reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-                }
-
-                // Listen for any brand-new service worker installing
-                reg.addEventListener('updatefound', () => {
-                    const installingWorker = reg.installing;
-                    installingWorker.addEventListener('statechange', () => {
-                        if (installingWorker.state === 'installed') {
-                            if (navigator.serviceWorker.controller) {
-                                // New content found! The worker will activate automatically
-                                console.log('New update installed.');
-                            }
-                        }
-                    });
-                });
-            })
-            .catch(err => console.log('Registration failed:', err));
-    });
-
-    // This is the magic trigger: when the new service worker takes over, reload the window automatically
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-            refreshing = true;
-            window.location.reload();
-        }
+        navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('Service Worker registered successfully!', reg.scope))
+            .catch(err => console.log('Service Worker registration failed:', err));
     });
 }
