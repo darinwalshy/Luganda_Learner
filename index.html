@@ -194,6 +194,10 @@
 </head>
 <body>
 
+    <div id="networkDebugger" style="width: 100%; max-width: 400px; background: #fff3cd; color: #856404; padding: 15px; margin: 10px 0; border: 1px solid #ffeeba; border-radius: 12px; font-family: monospace; font-size: 12px; text-align: left; max-height: 180px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        Diagnostic Status: Initializing connection test...
+    </div>
+
     <header>
         <h1>Luganda Learner</h1>
         <div class="selector-container">
@@ -227,11 +231,11 @@
     </main>
 
     <footer>
-        App Version: v11
+        App Version: v11-diagnostic
     </footer>
 
     <script>
-        // Holds the entire multi-category database from our JSON file
+        // Holds the entire multi-category database from our live Excel/CSV file
         let masterDatabase = {};
         let activeList = [];
         let currentWordIndex = -1;
@@ -243,35 +247,39 @@
         const englishBack = document.getElementById('englishBack');
         const categorySelect = document.getElementById('categorySelect');
 
-        }
-
         async function loadMasterData() {
+            const debugBox = document.getElementById('networkDebugger');
             try {
                 const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfnLZbNhfSiw-xsabAsZW-tvg96yKPRWNnZ9oZu-is1iTpgogFqlBMoIk6H1WM9w/pub?output=csv';
                 
-                // Add a timestamp parameter to force the browser to bypass any old cache
+                debugBox.innerHTML = "<strong>Status:</strong> Requesting Google Drive CSV stream...<br>";
+                
+                // Add timestamp to foil service worker cache layers
                 const response = await fetch(`${cloudUrl}&t=${new Date().getTime()}`);
+                
+                debugBox.innerHTML += `<strong>Status:</strong> Connected! Code: ${response.status} (${response.statusText})<br>`;
+                
                 const rawText = await response.text();
                 
-                masterDatabase = {}; 
+                // Capture first 120 characters to see exactly what Google is throwing back
+                const dataSnapshot = rawText.substring(0, 120).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                debugBox.innerHTML += `<strong>Data Feed Snippet:</strong> <span style="color:blue;">${dataSnapshot}...</span><br>`;
                 
-                // Split by newlines to handle both Windows and Mac line endings
+                masterDatabase = {}; 
                 const rows = rawText.split(/\r?\n/);
+                debugBox.innerHTML += `<strong>Status:</strong> Parsed ${rows.length} total raw lines.<br>`;
                 
                 for (let i = 1; i < rows.length; i++) {
                     const currentRow = rows[i].trim();
                     if (!currentRow) continue; 
                     
-                    // This regular expression splits by commas BUT ignores commas inside quotation marks
                     const columns = currentRow.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (columns.length < 3) continue; 
                     
-                    // Strip out hidden quotation marks or web spacing artifacts
                     const category = columns[0].replace(/^"|"$/g, '').trim(); 
                     const lugandaWord = columns[1].replace(/^"|"$/g, '').trim();
                     const englishWord = columns[2].replace(/^"|"$/g, '').trim();
                     
-                    // Skip header fallback row if it accidentally repeats
                     if (category.toLowerCase() === 'category') continue;
                     
                     if (!masterDatabase[category]) {
@@ -284,10 +292,10 @@
                     });
                 }
                 
-                // Flexible category matching logic
-                let currentSelection = document.getElementById('categorySelect').value;
+                const categoriesFound = Object.keys(masterDatabase).join(', ');
+                debugBox.innerHTML += `<strong>Categories Extracted:</strong> [${categoriesFound || 'NONE'}]<br>`;
                 
-                // Build a lowercase lookup map to cross-reference mismatches seamlessly
+                let currentSelection = categorySelect.value;
                 const lookupMap = {};
                 Object.keys(masterDatabase).forEach(key => {
                     lookupMap[key.toLowerCase()] = key;
@@ -296,28 +304,33 @@
                 const matchedKey = lookupMap[currentSelection.toLowerCase()];
                 if (matchedKey) {
                     switchCategory(matchedKey);
+                    debugBox.style.background = "#d4edda"; 
+                    debugBox.style.color = "#155724";
+                    debugBox.innerHTML += `<strong>Success:</strong> Loaded interactive dataset.`;
                 } else {
-                    // Fallback: If the default selection isn't found, load the first available category from your sheet
-                    const firstAvailableCategory = Object.keys(masterDatabase)[0];
-                    if (firstAvailableCategory) {
-                        switchCategory(firstAvailableCategory);
+                    const fallback = Object.keys(masterDatabase)[0];
+                    if (fallback) {
+                        switchCategory(fallback);
+                        debugBox.innerHTML += `<strong>Warning:</strong> Menu option mismatch. Loaded fallback deck: "${fallback}"<br>`;
                     } else {
-                        document.getElementById('lugandaWord').innerText = "No categories found";
+                        lugandaFront.innerText = "Empty Database";
+                        debugBox.innerHTML += `<strong>Error:</strong> Extracted zero categories from rows.<br>`;
                     }
                 }
                 
             } catch (error) {
-                console.error("Error fetching or parsing live spreadsheet data:", error);
-                document.getElementById('lugandaWord').innerText = "Network Error";
+                debugBox.style.background = "#f8d7da"; 
+                debugBox.style.color = "#721c24";
+                debugBox.innerHTML += `<strong style="color:red;">CRITICAL CONNECTION ERROR:</strong> ${error.message}<br>`;
+                console.error(error);
             }
         }
         
-        // Shifts focus to a specific category list
         function switchCategory(categoryKey) {
             if (!masterDatabase[categoryKey]) return;
             
             activeList = masterDatabase[categoryKey];
-            currentWordIndex = -1; // Reset placement
+            currentWordIndex = -1; 
             
             getNewWord();
         }
