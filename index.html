@@ -227,7 +227,7 @@
     </main>
 
     <footer>
-        App Version: v11
+        App Version: v11.1
     </footer>
 
     <script>
@@ -248,24 +248,31 @@
         async function loadMasterData() {
             try {
                 const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfnLZbNhfSiw-xsabAsZW-tvg96yKPRWNnZ9oZu-is1iTpgogFqlBMoIk6H1WM9w/pub?output=csv';
-                const response = await fetch(cloudUrl);
+                
+                // Add a timestamp parameter to force the browser to bypass any old cache
+                const response = await fetch(`${cloudUrl}&t=${new Date().getTime()}`);
                 const rawText = await response.text();
                 
                 masterDatabase = {}; 
                 
-                const rows = rawText.split('\n');
+                // Split by newlines to handle both Windows and Mac line endings
+                const rows = rawText.split(/\r?\n/);
                 
                 for (let i = 1; i < rows.length; i++) {
                     const currentRow = rows[i].trim();
                     if (!currentRow) continue; 
                     
-                    const columns = currentRow.split(','); 
-                    if (columns.length < 3) continue; // Skip incomplete rows
+                    // This regular expression splits by commas BUT ignores commas inside quotation marks
+                    const columns = currentRow.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (columns.length < 3) continue; 
                     
-                    // REMOVED .toLowerCase() so it matches your spreadsheet capitalization perfectly!
-                    const category = columns[0].trim(); 
-                    const lugandaWord = columns[1].trim();
-                    const englishWord = columns[2].trim();
+                    // Strip out hidden quotation marks or web spacing artifacts
+                    const category = columns[0].replace(/^"|"$/g, '').trim(); 
+                    const lugandaWord = columns[1].replace(/^"|"$/g, '').trim();
+                    const englishWord = columns[2].replace(/^"|"$/g, '').trim();
+                    
+                    // Skip header fallback row if it accidentally repeats
+                    if (category.toLowerCase() === 'category') continue;
                     
                     if (!masterDatabase[category]) {
                         masterDatabase[category] = [];
@@ -277,25 +284,34 @@
                     });
                 }
                 
-                // Safety Fallback: If "Small Words" is selected but your sheet uses "small words",
-                // this checks both versions so the app never gets stuck on "Loading..."
+                // Flexible category matching logic
                 let currentSelection = document.getElementById('categorySelect').value;
-                if (!masterDatabase[currentSelection]) {
-                    // Try matching lowercase if exact match fails
-                    const foundCategory = Object.keys(masterDatabase).find(
-                        key => key.toLowerCase() === currentSelection.toLowerCase()
-                    );
-                    if (foundCategory) currentSelection = foundCategory;
-                }
                 
-                switchCategory(currentSelection);
+                // Build a lowercase lookup map to cross-reference mismatches seamlessly
+                const lookupMap = {};
+                Object.keys(masterDatabase).forEach(key => {
+                    lookupMap[key.toLowerCase()] = key;
+                });
+                
+                const matchedKey = lookupMap[currentSelection.toLowerCase()];
+                if (matchedKey) {
+                    switchCategory(matchedKey);
+                } else {
+                    // Fallback: If the default selection isn't found, load the first available category from your sheet
+                    const firstAvailableCategory = Object.keys(masterDatabase)[0];
+                    if (firstAvailableCategory) {
+                        switchCategory(firstAvailableCategory);
+                    } else {
+                        document.getElementById('lugandaWord').innerText = "No categories found";
+                    }
+                }
                 
             } catch (error) {
                 console.error("Error fetching or parsing live spreadsheet data:", error);
-                document.getElementById('lugandaWord').innerText = "Error loading data";
+                document.getElementById('lugandaWord').innerText = "Network Error";
             }
         }
-                
+        
         // Shifts focus to a specific category list
         function switchCategory(categoryKey) {
             if (!masterDatabase[categoryKey]) return;
