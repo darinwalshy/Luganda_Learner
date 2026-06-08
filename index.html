@@ -244,52 +244,58 @@
         const categorySelect = document.getElementById('categorySelect');
 
         }
+
         async function loadMasterData() {
             try {
-                // 1. Target your live Google Docs CSV feed
                 const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfnLZbNhfSiw-xsabAsZW-tvg96yKPRWNnZ9oZu-is1iTpgogFqlBMoIk6H1WM9w/pub?output=csv';
                 const response = await fetch(cloudUrl);
                 const rawText = await response.text();
                 
-                // 2. Clear out the database to prepare for fresh data
                 masterDatabase = {}; 
                 
-                // 3. Break the text file down into individual rows
                 const rows = rawText.split('\n');
                 
-                // 4. Loop through every row (skipping Row 1, which is the header)
                 for (let i = 1; i < rows.length; i++) {
                     const currentRow = rows[i].trim();
-                    if (!currentRow) continue; // Skip empty rows
+                    if (!currentRow) continue; 
                     
-                    // Break the row up by its commas: [Category, Luganda, English]
                     const columns = currentRow.split(','); 
+                    if (columns.length < 3) continue; // Skip incomplete rows
                     
-                    // Clean up whitespace and make the category lowercase
-                    const category = columns[0].trim().toLowerCase();
+                    // REMOVED .toLowerCase() so it matches your spreadsheet capitalization perfectly!
+                    const category = columns[0].trim(); 
                     const lugandaWord = columns[1].trim();
                     const englishWord = columns[2].trim();
                     
-                    // If this category doesn't exist in our app yet, create it dynamically!
                     if (!masterDatabase[category]) {
                         masterDatabase[category] = [];
                     }
                     
-                    // Push the word pair into its matching category bucket
                     masterDatabase[category].push({ 
                         luganda: lugandaWord, 
                         english: englishWord 
                     });
                 }
                 
-                // Load whatever category is currently selected in your dropdown menu
-                switchCategory(document.getElementById('categorySelect').value);
+                // Safety Fallback: If "Small Words" is selected but your sheet uses "small words",
+                // this checks both versions so the app never gets stuck on "Loading..."
+                let currentSelection = document.getElementById('categorySelect').value;
+                if (!masterDatabase[currentSelection]) {
+                    // Try matching lowercase if exact match fails
+                    const foundCategory = Object.keys(masterDatabase).find(
+                        key => key.toLowerCase() === currentSelection.toLowerCase()
+                    );
+                    if (foundCategory) currentSelection = foundCategory;
+                }
+                
+                switchCategory(currentSelection);
                 
             } catch (error) {
                 console.error("Error fetching or parsing live spreadsheet data:", error);
+                document.getElementById('lugandaWord').innerText = "Error loading data";
             }
         }
-        
+                
         // Shifts focus to a specific category list
         function switchCategory(categoryKey) {
             if (!masterDatabase[categoryKey]) return;
