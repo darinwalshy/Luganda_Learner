@@ -227,7 +227,7 @@
     </main>
 
     <footer>
-        App Version: v10
+        App Version: v11
     </footer>
 
     <script>
@@ -243,22 +243,53 @@
         const englishBack = document.getElementById('englishBack');
         const categorySelect = document.getElementById('categorySelect');
 
-        // Fetch master dictionary from external file
+        }
         async function loadMasterData() {
             try {
-                const response = await fetch('words.json');
-                masterDatabase = await response.json();
+                // 1. Target your live Google Docs CSV feed
+                const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfnLZbNhfSiw-xsabAsZW-tvg96yKPRWNnZ9oZu-is1iTpgogFqlBMoIk6H1WM9w/pub?output=csv';
+                const response = await fetch(cloudUrl);
+                const rawText = await response.text();
                 
-                // Start by loading whatever category the dropdown defaults to
-                switchCategory(categorySelect.value);
+                // 2. Clear out the database to prepare for fresh data
+                masterDatabase = {}; 
+                
+                // 3. Break the text file down into individual rows
+                const rows = rawText.split('\n');
+                
+                // 4. Loop through every row (skipping Row 1, which is the header)
+                for (let i = 1; i < rows.length; i++) {
+                    const currentRow = rows[i].trim();
+                    if (!currentRow) continue; // Skip empty rows
+                    
+                    // Break the row up by its commas: [Category, Luganda, English]
+                    const columns = currentRow.split(','); 
+                    
+                    // Clean up whitespace and make the category lowercase
+                    const category = columns[0].trim().toLowerCase();
+                    const lugandaWord = columns[1].trim();
+                    const englishWord = columns[2].trim();
+                    
+                    // If this category doesn't exist in our app yet, create it dynamically!
+                    if (!masterDatabase[category]) {
+                        masterDatabase[category] = [];
+                    }
+                    
+                    // Push the word pair into its matching category bucket
+                    masterDatabase[category].push({ 
+                        luganda: lugandaWord, 
+                        english: englishWord 
+                    });
+                }
+                
+                // Load whatever category is currently selected in your dropdown menu
+                switchCategory(document.getElementById('categorySelect').value);
+                
             } catch (error) {
-                console.error("Error loading master dictionary:", error);
-                lugandaFront.textContent = "Offline / Error";
-                lugandaBack.textContent = "Offline / Error";
-                englishBack.textContent = "Connect to network to sync data file.";
+                console.error("Error fetching or parsing live spreadsheet data:", error);
             }
         }
-
+        
         // Shifts focus to a specific category list
         function switchCategory(categoryKey) {
             if (!masterDatabase[categoryKey]) return;
