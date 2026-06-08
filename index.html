@@ -231,7 +231,7 @@
     </main>
 
     <footer>
-        App Version: v11-diagnostic
+        App Version: v12-case-fix
     </footer>
 
     <script>
@@ -278,12 +278,15 @@
                     const columns = currentRow.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     if (columns.length < 3) continue; 
                     
-                    const category = columns[0].replace(/^"|"$/g, '').trim(); 
+                    // CASE-INSENSITIVE FIX: Force categories to lowercase to perfectly match menu choices
+                    const rawCategory = columns[0].replace(/^"|"$/g, '').trim(); 
+                    const category = rawCategory.toLowerCase();
+                    
                     const lugandaWord = columns[1].replace(/^"|"$/g, '').trim();
                     const englishWord = columns[2].replace(/^"|"$/g, '').trim();
                     
                     // Skip the header row wherever it shows up
-                    if (category.toLowerCase() === 'category') continue;
+                    if (category === 'category') continue;
                     
                     if (!masterDatabase[category]) {
                         masterDatabase[category] = [];
@@ -296,17 +299,13 @@
                 }
                 
                 const categoriesFound = Object.keys(masterDatabase).join(', ');
-                debugBox.innerHTML += `<strong>Categories Extracted:</strong> [${categoriesFound || 'NONE'}]<br>`;
+                debugBox.innerHTML += `<strong>Categories Extracted (Normalized):</strong> [${categoriesFound || 'NONE'}]<br>`;
                 
-                let currentSelection = categorySelect.value;
-                const lookupMap = {};
-                Object.keys(masterDatabase).forEach(key => {
-                    lookupMap[key.toLowerCase()] = key;
-                });
+                // Active lookup using lowercase drop-down values
+                let currentSelection = categorySelect.value.toLowerCase();
                 
-                const matchedKey = lookupMap[currentSelection.toLowerCase()];
-                if (matchedKey) {
-                    switchCategory(matchedKey);
+                if (masterDatabase[currentSelection]) {
+                    switchCategory(currentSelection);
                     debugBox.style.background = "#d4edda"; 
                     debugBox.style.color = "#155724";
                     debugBox.innerHTML += `<strong>Success:</strong> Loaded interactive dataset.`;
@@ -330,9 +329,11 @@
         }
         
         function switchCategory(categoryKey) {
-            if (!masterDatabase[categoryKey]) return;
+            // Ensure we use lowercase evaluation here as well
+            const targetKey = categoryKey.toLowerCase();
+            if (!masterDatabase[targetKey]) return;
             
-            activeList = masterDatabase[categoryKey];
+            activeList = masterDatabase[targetKey];
             currentWordIndex = -1; 
             
             getNewWord();
