@@ -266,10 +266,12 @@
                 debugBox.innerHTML += `<strong>Data Feed Snippet:</strong> <span style="color:blue;">${dataSnapshot}...</span><br>`;
                 
                 masterDatabase = {}; 
-                const rows = rawText.split(/\r?\n/);
+                
+                // RUGGED LINE SPLITTER: Handles mashed together text streams seamlessly
+                const rows = rawText.split(/[\r\n]+/);
                 debugBox.innerHTML += `<strong>Status:</strong> Parsed ${rows.length} total raw lines.<br>`;
                 
-                for (let i = 1; i < rows.length; i++) {
+                for (let i = 0; i < rows.length; i++) {
                     const currentRow = rows[i].trim();
                     if (!currentRow) continue; 
                     
@@ -280,6 +282,7 @@
                     const lugandaWord = columns[1].replace(/^"|"$/g, '').trim();
                     const englishWord = columns[2].replace(/^"|"$/g, '').trim();
                     
+                    // Skip the header row wherever it shows up
                     if (category.toLowerCase() === 'category') continue;
                     
                     if (!masterDatabase[category]) {
