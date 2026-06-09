@@ -232,13 +232,15 @@
     </main>
 
     <footer>
-        App Version: v1.0 Production
+        App Version: v1.2 Production (No-Repeat)
     </footer>
 
     <script>
         let masterDatabase = {};
         let activeList = [];
-        let currentWordIndex = -1;
+        
+        // Dynamic playlist tracker that shrinks as you view words
+        let shuffledDeck = [];
 
         const flashcard = document.getElementById('flashcard');
         const nextBtn = document.getElementById('nextBtn');
@@ -303,7 +305,10 @@
             if (!masterDatabase[targetKey]) return;
             
             activeList = masterDatabase[targetKey];
-            currentWordIndex = -1; 
+            
+            // Wipe the current playlist tracker so a fresh one loads instantly for the new deck
+            shuffledDeck = [];
+            
             getNewWord();
         }
 
@@ -318,18 +323,18 @@
             flashcard.classList.remove('is-flipped');
             
             setTimeout(() => {
-                let randomIndex;
-                if (activeList.length > 1) {
-                    do {
-                        randomIndex = Math.floor(Math.random() * activeList.length);
-                    } while (randomIndex === currentWordIndex);
-                } else {
-                    randomIndex = 0;
+                // If we've run out of words or are starting fresh, clone a new batch from the source list
+                if (shuffledDeck.length === 0) {
+                    shuffledDeck = [...activeList]; 
                 }
                 
-                currentWordIndex = randomIndex;
-                const currentWord = activeList[currentWordIndex];
+                // Select a random index explicitly from what remains inside the temporary deck
+                let randomIndex = Math.floor(Math.random() * shuffledDeck.length);
                 
+                // Pull (splice) that specific card out of the deck completely
+                const currentWord = shuffledDeck.splice(randomIndex, 1)[0];
+                
+                // Update interface with the drawn card
                 lugandaFront.textContent = currentWord.luganda;
                 lugandaBack.textContent = currentWord.luganda;
                 englishBack.textContent = currentWord.english;
