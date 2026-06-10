@@ -1,4 +1,4 @@
-const CACHE_NAME = 'luganda-learner-v1.3 Production';
+const CACHE_NAME = 'luganda-learner-v1.4 Production';
 const ASSETS = [
   'index.html',
   'words.json',
