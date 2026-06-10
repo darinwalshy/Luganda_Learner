@@ -71,6 +71,15 @@
             gap: 25px;
         }
 
+        /* Progress Counter Style */
+        .progress-counter {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            margin-bottom: -15px; /* Pulls it closer to the flashcard */
+        }
+
         /* 3D Flashcard Wrapper */
         .flashcard-container {
             width: 100%;
@@ -179,12 +188,12 @@
             transform: scale(0.98);
         }
 
-        /* PRIMARY ACTION: Next Word (Enlarged to 1.5x height & text emphasis) */
+        /* PRIMARY ACTION: Next Word (Super-sized to 36px padding) */
         .btn-primary {
             background-color: #10b981;
             color: white;
-            padding: 24px; /* Increased from 16px to give 1.5x physical height presence */
-            font-size: 1.25rem; /* Slightly larger text size to emphasize priority */
+            padding: 36px; /* Increased from 24px to give double the original physical presence */
+            font-size: 1.25rem; /* Font size stays clean and balanced */
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
         }
 
@@ -192,11 +201,11 @@
             background-color: #059669;
         }
 
-        /* SECONDARY ACTION: Review Again (Full button styling matching old base sizes) */
+        /* SECONDARY ACTION: Review Again */
         .btn-secondary {
             background-color: #e2e8f0;
             color: #475569;
-            padding: 16px; /* Standard base height */
+            padding: 16px; 
             font-size: 1.05rem;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
@@ -236,6 +245,8 @@
     </header>
 
     <main class="app-container">
+        <div id="progressCounter" class="progress-counter">--/--</div>
+
         <div class="flashcard-container" id="flashcardContainer">
             <div class="flashcard" id="flashcard">
                 <div class="card-side card-front">
@@ -258,7 +269,7 @@
     </main>
 
     <footer>
-        App Version: v1.4 Balanced-Buttons
+        App Version: v1.5 Progress-Track
     </footer>
 
     <script>
@@ -274,6 +285,7 @@
         const lugandaBack = document.getElementById('lugandaBack');
         const englishBack = document.getElementById('englishBack');
         const categorySelect = document.getElementById('categorySelect');
+        const progressCounter = document.getElementById('progressCounter');
 
         async function loadMasterData() {
             const debugBox = document.getElementById('networkDebugger');
@@ -337,11 +349,26 @@
             getNewWord();
         }
 
+        function updateProgressUI() {
+            if (activeList.length === 0) {
+                progressCounter.textContent = "0/0";
+                return;
+            }
+            // Count cards left to review (unseen cards in deck + 1 for the card currently active on screen)
+            let remainingCount = shuffledDeck.length;
+            if (currentCardItem) {
+                remainingCount += 1;
+            }
+            
+            progressCounter.textContent = `${remainingCount}/${activeList.length}`;
+        }
+
         function getNewWord() {
             if (activeList.length === 0) {
                 lugandaFront.textContent = "Empty Deck";
                 lugandaBack.textContent = "Empty Deck";
                 englishBack.textContent = "No words found in this category.";
+                updateProgressUI();
                 return;
             }
             
@@ -358,6 +385,8 @@
                 lugandaFront.textContent = currentCardItem.luganda;
                 lugandaBack.textContent = currentCardItem.luganda;
                 englishBack.textContent = currentCardItem.english;
+                
+                updateProgressUI();
             }, 200);
         }
 
