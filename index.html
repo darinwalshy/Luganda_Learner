@@ -157,6 +157,9 @@
 
         .controls {
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .btn {
@@ -179,6 +182,23 @@
 
         .btn:active {
             transform: scale(0.98);
+        }
+
+        /* Added clean secondary text style for Review button */
+        .btn-secondary {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 8px;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            color: #334155;
         }
 
         /* Version Badge Styling */
@@ -228,22 +248,25 @@
 
         <div class="controls">
             <button id="nextBtn" class="btn">Next Word &rarr;</button>
+            <button id="reviewBtn" class="btn-secondary">Review again</button>
         </div>
     </main>
 
     <footer>
-        App Version: v1.2 Production (No-Repeat)
+        App Version: v1.3 Loop-Flow
     </footer>
 
     <script>
         let masterDatabase = {};
         let activeList = [];
-        
-        // Dynamic playlist tracker that shrinks as you view words
         let shuffledDeck = [];
+        
+        // This holds the current word temporary variable when drawn
+        let currentCardItem = null;
 
         const flashcard = document.getElementById('flashcard');
         const nextBtn = document.getElementById('nextBtn');
+        const reviewBtn = document.getElementById('reviewBtn');
         const lugandaFront = document.getElementById('lugandaFront');
         const lugandaBack = document.getElementById('lugandaBack');
         const englishBack = document.getElementById('englishBack');
@@ -305,9 +328,8 @@
             if (!masterDatabase[targetKey]) return;
             
             activeList = masterDatabase[targetKey];
-            
-            // Wipe the current playlist tracker so a fresh one loads instantly for the new deck
             shuffledDeck = [];
+            currentCardItem = null;
             
             getNewWord();
         }
@@ -323,29 +345,41 @@
             flashcard.classList.remove('is-flipped');
             
             setTimeout(() => {
-                // If we've run out of words or are starting fresh, clone a new batch from the source list
+                // If our tracking playlist runs out of cards, load a fresh copy of the whole list
                 if (shuffledDeck.length === 0) {
                     shuffledDeck = [...activeList]; 
                 }
                 
-                // Select a random index explicitly from what remains inside the temporary deck
+                // Draw a random card out of the remaining deck
                 let randomIndex = Math.floor(Math.random() * shuffledDeck.length);
+                currentCardItem = shuffledDeck.splice(randomIndex, 1)[0];
                 
-                // Pull (splice) that specific card out of the deck completely
-                const currentWord = shuffledDeck.splice(randomIndex, 1)[0];
-                
-                // Update interface with the drawn card
-                lugandaFront.textContent = currentWord.luganda;
-                lugandaBack.textContent = currentWord.luganda;
-                englishBack.textContent = currentWord.english;
+                // Display it on screen
+                lugandaFront.textContent = currentCardItem.luganda;
+                lugandaBack.textContent = currentCardItem.luganda;
+                englishBack.textContent = currentCardItem.english;
             }, 200);
         }
+
+        // Action when you drop the word and want a completely fresh one
+        nextBtn.addEventListener('click', () => {
+            currentCardItem = null; // Let the card drop permanently
+            getNewWord();
+        });
+
+        // Action when you want to loop the word back into the active pool
+        reviewBtn.addEventListener('click', () => {
+            if (currentCardItem) {
+                shuffledDeck.push(currentCardItem); // Push it back into our pool
+                currentCardItem = null;
+            }
+            getNewWord();
+        });
 
         flashcard.addEventListener('click', () => {
             flashcard.classList.toggle('is-flipped');
         });
 
-        nextBtn.addEventListener('click', getNewWord);
         window.addEventListener('DOMContentLoaded', loadMasterData);
 
         if ('serviceWorker' in navigator) {
