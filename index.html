@@ -159,46 +159,51 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
         }
 
-        .btn {
+        /* BASE BUTTON RESET */
+        .btn-base {
             width: 100%;
-            background-color: #10b981;
-            color: white;
             border: none;
-            padding: 16px;
-            font-size: 1.1rem;
-            font-weight: 600;
             border-radius: 12px;
+            font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
             transition: transform 0.1s, background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .btn:hover {
-            background-color: #059669;
-        }
-
-        .btn:active {
+        .btn-base:active {
             transform: scale(0.98);
         }
 
-        /* Added clean secondary text style for Review button */
+        /* PRIMARY ACTION: Next Word (Enlarged to 1.5x height & text emphasis) */
+        .btn-primary {
+            background-color: #10b981;
+            color: white;
+            padding: 24px; /* Increased from 16px to give 1.5x physical height presence */
+            font-size: 1.25rem; /* Slightly larger text size to emphasize priority */
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-primary:hover {
+            background-color: #059669;
+        }
+
+        /* SECONDARY ACTION: Review Again (Full button styling matching old base sizes) */
         .btn-secondary {
-            background: none;
-            border: none;
-            color: #64748b;
-            font-size: 0.95rem;
-            font-weight: 600;
-            padding: 8px;
-            cursor: pointer;
-            text-decoration: underline;
-            transition: color 0.2s;
+            background-color: #e2e8f0;
+            color: #475569;
+            padding: 16px; /* Standard base height */
+            font-size: 1.05rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
 
         .btn-secondary:hover {
-            color: #334155;
+            background-color: #cbd5e1;
+            color: #1e293b;
         }
 
         /* Version Badge Styling */
@@ -247,21 +252,19 @@
         </div>
 
         <div class="controls">
-            <button id="nextBtn" class="btn">Next Word &rarr;</button>
-            <button id="reviewBtn" class="btn-secondary">Review again</button>
+            <button id="nextBtn" class="btn-base btn-primary">Next Word &rarr;</button>
+            <button id="reviewBtn" class="btn-base btn-secondary">Review again</button>
         </div>
     </main>
 
     <footer>
-        App Version: v1.3 Loop-Flow
+        App Version: v1.4 Balanced-Buttons
     </footer>
 
     <script>
         let masterDatabase = {};
         let activeList = [];
         let shuffledDeck = [];
-        
-        // This holds the current word temporary variable when drawn
         let currentCardItem = null;
 
         const flashcard = document.getElementById('flashcard');
@@ -345,32 +348,27 @@
             flashcard.classList.remove('is-flipped');
             
             setTimeout(() => {
-                // If our tracking playlist runs out of cards, load a fresh copy of the whole list
                 if (shuffledDeck.length === 0) {
                     shuffledDeck = [...activeList]; 
                 }
                 
-                // Draw a random card out of the remaining deck
                 let randomIndex = Math.floor(Math.random() * shuffledDeck.length);
                 currentCardItem = shuffledDeck.splice(randomIndex, 1)[0];
                 
-                // Display it on screen
                 lugandaFront.textContent = currentCardItem.luganda;
                 lugandaBack.textContent = currentCardItem.luganda;
                 englishBack.textContent = currentCardItem.english;
             }, 200);
         }
 
-        // Action when you drop the word and want a completely fresh one
         nextBtn.addEventListener('click', () => {
-            currentCardItem = null; // Let the card drop permanently
+            currentCardItem = null; 
             getNewWord();
         });
 
-        // Action when you want to loop the word back into the active pool
         reviewBtn.addEventListener('click', () => {
             if (currentCardItem) {
-                shuffledDeck.push(currentCardItem); // Push it back into our pool
+                shuffledDeck.push(currentCardItem); 
                 currentCardItem = null;
             }
             getNewWord();
