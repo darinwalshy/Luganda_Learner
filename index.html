@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Luganda Learner</title>
-    <link class="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json">
     <style>
         /* Clean, modern resets */
         * {
@@ -77,7 +77,7 @@
             font-weight: 700;
             color: #64748b;
             letter-spacing: 0.5px;
-            margin-bottom: -15px; /* Pulls it closer to the flashcard */
+            margin-bottom: -15px;
         }
 
         /* 3D Flashcard Wrapper */
@@ -188,7 +188,7 @@
             transform: scale(0.98);
         }
 
-        /* PRIMARY ACTION: Next Word (Super-sized to 36px padding) */
+        /* PRIMARY ACTION: Next Word */
         .btn-primary {
             background-color: #10b981;
             color: white;
@@ -269,7 +269,7 @@
     </main>
 
     <footer>
-        App Version: v1.6-Offline-Fix
+        App Version: v1.7-Storage-Fallback
     </footer>
 
     <script>
@@ -299,28 +299,26 @@
                 if (!response.ok) throw new Error("Cloud fetch failed status");
                 rawText = await response.text();
                 
+                // Parse the cloud text into our database structure
+                parseAndStoreCSV(rawText);
+                
             } catch (error) {
-                console.log("Cloud unavailable, loading offline local words.json fallback...", error);
-                try {
-                    const localResponse = await fetch('./words.json');
-                    const localData = await localResponse.json();
-                    
-                    masterDatabase = {};
-                    for (const cat in localData) {
-                        masterDatabase[cat.toLowerCase()] = localData[cat];
-                    }
-                    
+                console.log("Cloud unavailable. Checking local storage fallback...", error);
+                const storedData = localStorage.getItem('cachedLugandaWords');
+                
+                if (storedData) {
+                    masterDatabase = JSON.parse(storedData);
                     instantiateCategorySelection();
-                    return; 
-                } catch (jsonError) {
-                    lugandaFront.innerText = "Connection Error";
-                    console.error("Both cloud and local fallback failed", jsonError);
-                    return;
+                } else {
+                    lugandaFront.innerText = "Offline: No saved data found";
+                    console.error("Both cloud and local fallback storage empty.");
                 }
             }
-            
+        }
+
+        function parseAndStoreCSV(text) {
             masterDatabase = {}; 
-            const rows = rawText.split(/[\r\n]+/);
+            const rows = text.split(/[\r\n]+/);
             
             for (let i = 0; i < rows.length; i++) {
                 const currentRow = rows[i].trim();
@@ -344,9 +342,11 @@
                 masterDatabase[category].push({ 
                     luganda: lugandaWord, 
                     english: englishWord 
-                    });
+                });
             }
             
+            // Save to browser memory for complete offline access
+            localStorage.setItem('cachedLugandaWords', JSON.stringify(masterDatabase));
             instantiateCategorySelection();
         }
 
