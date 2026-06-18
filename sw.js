@@ -1,9 +1,10 @@
-const CACHE_NAME = 'luganda-learner-v1.6-Offline-Fix';
+const CACHE_NAME = 'luganda-learner-v1.7-Offline-Fix';
+const REPO_NAME = '/Luganda_Learner';
+
 const ASSETS = [
-  './',
-  './index.html',
-  './words.json',
-  './manifest.json'
+  `${REPO_NAME}/`,
+  `${REPO_NAME}/index.html`,
+  `${REPO_NAME}/manifest.json`
 ];
 
 // Install event
@@ -27,11 +28,17 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event: NETWORK FIRST strategy
+// Fetch event: NETWORK FIRST with immediate cache fallback
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
-    })
-  );
+  // Only intercept requests for our own application assets
+  if (event.request.url.includes(self.location.origin)) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(event.request).then((response) => {
+          // If found in cache, return it; otherwise try to match the root index
+          return response || caches.match(`${REPO_NAME}/index.html`);
+        });
+      })
+    );
+  }
 });
