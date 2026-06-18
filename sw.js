@@ -1,8 +1,9 @@
-const CACHE_NAME = 'luganda-learner-v1.5 Production';
+const CACHE_NAME = 'luganda-learner-v1.6-Offline-Fix';
 const ASSETS = [
-  'index.html',
-  'words.json',
-  'manifest.json' // Added to the assets list
+  './',
+  './index.html',
+  './words.json',
+  './manifest.json'
 ];
 
 // Install event
