@@ -1,4 +1,4 @@
-const CACHE_NAME = 'luganda-learner-v1.7-Offline-Fix';
+const CACHE_NAME = 'luganda-learner-v1.8';
 const REPO_NAME = '/Luganda_Learner';
 
 const ASSETS = [
