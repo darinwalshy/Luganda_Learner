@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Luganda Learner</title>
     <link rel="manifest" href="manifest.json">
     <style>
+        /* Clean, modern resets */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -23,430 +24,415 @@
             padding: 20px;
         }
 
-        .header {
-            margin-bottom: 20px;
+        header {
             text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 400px;
         }
 
-        .header h1 {
+        header h1 {
             color: #1e3a8a;
-            font-size: 28px;
-            margin-bottom: 15px;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+
+        /* Category Dropdown Styling */
+        .selector-container {
+            width: 100%;
+            margin-bottom: 25px;
         }
 
         .category-select {
             width: 100%;
-            max-width: 350px;
-            padding: 12px 16px;
-            font-size: 16px;
+            padding: 14px;
+            font-size: 1rem;
             font-weight: 600;
-            border: 2px solid #cbd5e1;
             border-radius: 12px;
+            border: 2px solid #cbd5e1;
             background-color: white;
             color: #1e3a8a;
             cursor: pointer;
             outline: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%231e3a8a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-            background-size: 16px;
+            transition: border-color 0.2s;
         }
 
-        .progress-text {
-            font-size: 14px;
+        .category-select:focus {
+            border-color: #1e3a8a;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        /* Progress Counter Style */
+        .progress-counter {
+            font-size: 1rem;
             font-weight: 700;
             color: #64748b;
-            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+            margin-bottom: -15px;
         }
 
-        .card-container {
+        /* 3D Flashcard Wrapper */
+        .flashcard-container {
             width: 100%;
-            max-width: 350px;
-            height: 320px;
+            height: 280px;
             perspective: 1000px;
             cursor: pointer;
-            margin-bottom: 25px;
         }
 
-        .card {
+        .flashcard {
             width: 100%;
             height: 100%;
             position: relative;
             transform-style: preserve-3d;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            border-radius: 24px;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            border-radius: 20px;
         }
 
-        .card.flipped {
+        .flashcard.is-flipped {
             transform: rotateY(180deg);
         }
 
-        .card-face {
+        .card-side {
             position: absolute;
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 30px;
-            border-radius: 24px;
             text-align: center;
-            background: white;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .card-back {
-            transform: rotateY(180deg);
-            background-color: #f8fafc;
+        .card-front {
+            background-color: #ffffff;
+            color: #1e293b;
         }
 
-        .word-text {
-            font-size: 36px;
-            font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 40px;
+        .card-front h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
             word-break: break-word;
         }
 
-        .hint-text {
-            font-size: 12px;
-            font-weight: 700;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            position: absolute;
-            bottom: 25px;
+        .card-back {
+            background-color: #1e3a8a;
+            color: #ffffff;
+            transform: rotateY(180deg);
         }
 
-        .btn {
-            width: 100%;
-            max-width: 350px;
-            padding: 16px;
-            font-size: 18px;
-            font-weight: 700;
+        .card-back h3 {
+            font-size: 1.2rem;
+            font-weight: 400;
+            opacity: 0.8;
+            word-break: break-word;
+        }
+
+        .card-back hr {
+            width: 40%;
             border: none;
-            border-radius: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            margin: 15px 0;
+        }
+
+        .card-back h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.4;
+        }
+
+        .controls {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* BASE BUTTON RESET */
+        .btn-base {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-base:active {
+            transform: scale(0.98);
+        }
+
+        /* PRIMARY ACTION: Next Word */
+        .btn-primary {
             background-color: #10b981;
             color: white;
-            cursor: pointer;
+            padding: 36px; 
+            font-size: 1.25rem; 
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-            transition: all 0.2s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            -webkit-tap-highlight-color: transparent;
         }
 
-        .btn:active {
-            transform: scale(0.98);
-            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1);
+        .btn-primary:hover {
+            background-color: #059669;
+        }
+
+        /* SECONDARY ACTION: Review Again */
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #475569;
+            padding: 16px; 
+            font-size: 1.05rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+            color: #1e293b;
+        }
+
+        /* Version Badge Styling */
+        footer {
+            margin-top: auto;
+            padding-top: 40px;
+            padding-bottom: 10px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
+    <div id="networkDebugger" style="display: none;"></div>
+
+    <header>
         <h1>Luganda Learner</h1>
-        <select id="categorySelect" class="category-select" onchange="switchCategory(this.value)">
-            <option value="small words">✏️ Small Words</option>
-            <option value="family">👨‍👩‍👧‍👦 Family</option>
-            <option value="food">🍌 Food</option>
-            <option value="body parts">💪 Body Parts</option>
-            <option value="greetings">👋 Greetings</option>
-            <option value="animals">🦁 Animals</option>
-            <option value="numbers">🔢 Numbers</option>
-            <option value="house">🏠 House</option>
-            <option value="outside">🌳 Outside</option>
-            <option value="new words">New Words</option>
-        </select>
-    </div>
+        <div class="selector-container">
+            <select id="categorySelect" class="category-select" onchange="switchCategory(this.value)">
+                <option value="small words">✏️ Small Words</option>
+                <option value="family">👨‍👩‍👧‍👦 Family</option>
+                <option value="food">🍌 Food</option>
+                <option value="body parts">💪 Body Parts</option>
+                <option value="household items">🏠 Household Items</option>
+                <option value="outside">🌳 Outside</option>
+                <option value="new words">New Words</option>
+            </select>
+        </div>
+    </header>
 
-    <div id="progressText" class="progress-text">0/0</div>
+    <main class="app-container">
+        <div id="progressCounter" class="progress-counter">--/--</div>
 
-    <div class="card-container" onclick="flipCard()">
-        <div id="card" class="card">
-            <div class="card-face card-front">
-                <div id="frontText" class="word-text">-</div>
-                <div class="hint-text">Tap to Flip</div>
-            </div>
-            <div class="card-face card-back">
-                <div id="backText" class="word-text">-</div>
-                <div class="hint-text">Tap to Flip</div>
+        <div class="flashcard-container" id="flashcardContainer">
+            <div class="flashcard" id="flashcard">
+                <div class="card-side card-front">
+                    <h2 id="lugandaFront">Loading...</h2>
+                    <span class="hint">Tap to flip</span>
+                </div>
+                <div class="card-side card-back">
+                    <h3 id="lugandaBack">Loading...</h3>
+                    <hr>
+                    <h2 id="englishBack">Loading...</h2>
+                    <span class="hint">Tap to flip back</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <button class="btn" onclick="nextWord(event)">Next Word &rarr;</button>
+        <div class="controls">
+            <button id="nextBtn" class="btn-base btn-primary">Next Word &rarr;</button>
+            <button id="reviewBtn" class="btn-base btn-secondary">Review again</button>
+        </div>
+    </main>
+
+    <footer>
+        App Version: v1.7-Storage-Fallback
+    </footer>
 
     <script>
-        const wordData = {
-            "small words": [
-                { luganda: "mu", english: "in" },
-                { luganda: "ku", english: "on / at" },
-                { luganda: "e", english: "to / at (places)" },
-                { luganda: "na", english: "and / with" },
-                { luganda: "te", english: "not" },
-                { luganda: "ya", english: "of (singular)" },
-                { luganda: "za", english: "of (plural)" },
-                { luganda: "wa", english: "of / where" },
-                { luganda: "ka", english: "small (prefix)" },
-                { luganda: "ki", english: "what" },
-                { luganda: "ba", english: "they / people (prefix)" },
-                { luganda: "li", english: "is / to be" },
-                { luganda: "eri", english: "towards / to" },
-                { luganda: "nti", english: "that (saying that)" },
-                { luganda: "buli", english: "every / each" },
-                { luganda: "ye", english: "he / she / yes" },
-                { luganda: "ffe", english: "us / we" },
-                { luganda: "mmwe", english: "you (plural)" },
-                { luganda: "ggwe", english: "you (singular)" },
-                { luganda: "bo", english: "them / they" },
-                { luganda: "nze", english: "me / I" },
-                { luganda: "kyo", english: "it" },
-                { luganda: "si", english: "is not" },
-                { luganda: "ate", english: "and then / but" },
-                { luganda: "oba", english: "or / if" },
-                { luganda: "lwaki", english: "why" },
-                { luganda: "daddi", english: "when" },
-                { luganda: "tyo", english: "like that" },
-                { luganda: "bano", english: "these (people)" },
-                { luganda: "bano be", english: "these are" },
-                { luganda: "wano", english: "here" },
-                { luganda: "eno", english: "here / this way" },
-                { luganda: "eyo", english: "there" },
-                { luganda: "buli omu", english: "everyone" },
-                { luganda: "ko", english: "a little bit (suffix)" },
-                { luganda: "mu ngeri eno", english: "in this way" },
-                { luganda: "naye", english: "but" },
-                { luganda: "kakati", english: "now" },
-                { luganda: "leero", english: "today" },
-                { luganda: "jo", english: "yesterday / tomorrow" },
-                { luganda: "bulijjo", english: "always" },
-                { luganda: "kumpi", english: "near / close" },
-                { luganda: "wala", english: "far" },
-                { luganda: "mpola", english: "slowly" },
-                { luganda: "mangu", english: "quickly / fast" },
-                { luganda: "nyo", english: "very / a lot" },
-                { luganda: "katono", english: "a little" },
-                { luganda: "kinene", english: "big" },
-                { luganda: "kitono", english: "small" },
-                { luganda: "kirungi", english: "good" },
-                { luganda: "kibi", english: "bad" },
-                { luganda: "bangamba", english: "they told me" }
-            ],
-            "family": [
-                { luganda: "maama", english: "mother" },
-                { luganda: "taata", english: "father" },
-                { luganda: "omwana", english: "child" },
-                { luganda: "abaana", english: "children" },
-                { luganda: "kojja", english: "maternal uncle" },
-                { luganda: "ssenga", english: "paternal aunt" },
-                { luganda: "jjajja", english: "grandparent" },
-                { luganda: "muganda wange", english: "my brother/sister (same sex)" },
-                { luganda: "mwannyinaze", english: "my brother/sister (opposite sex)" },
-                { luganda: "omwami", english: "husband / gentleman" },
-                { luganda: "omukyala", english: "wife / lady" },
-                { luganda: "mange", english: "my (suffix after relationship)" }
-            ],
-            "food": [
-                { luganda: "emmere", english: "food" },
-                { luganda: "amatooke", english: "green bananas / mashed food" },
-                { luganda: "akawunga", english: "posho / maize meal" },
-                { luganda: "ennyama", english: "meat" },
-                { luganda: "ebyennyanja", english: "fish" },
-                { luganda: "ebijanjalo", english: "beans" },
-                { luganda: "omuceere", english: "rice" },
-                { luganda: "amazi", english: "water" },
-                { luganda: "amata", english: "milk" },
-                { luganda: "caayi", english: "tea" },
-                { luganda: "omuzungu", english: "white person (often associated with bread/cakes historical context)" },
-                { luganda: "ennyaanya", english: "tomatoes" },
-                { luganda: "obutungulu", english: "onions" }
-            ],
-            "body parts": [
-                { luganda: "omutwe", english: "head" },
-                { luganda: "amaaso", english: "eyes" },
-                { luganda: "okutu", english: "ear" },
-                { luganda: "amatu", english: "ears" },
-                { luganda: "omumwa", english: "lip / mouth" },
-                { luganda: "amannyo", english: "teeth" },
-                { luganda: "olulimi", english: "tongue / language" },
-                { luganda: "omukono", english: "arm / hand" },
-                { luganda: "okugulu", english: "leg" },
-                { luganda: "amagulu", english: "legs" },
-                { luganda: "omugongo", english: "back" },
-                { luganda: "olubuto", english: "stomach / belly" }
-            ],
-            "greetings": [
-                { luganda: "wasuze otyanno", english: "good morning (how did you sleep)" },
-                { luganda: "bulungi", english: "well / fine" },
-                { luganda: "oli otyo", english: "how are you" },
-                { luganda: "gyendi", english: "I am fine / I am here" },
-                { luganda: "osiibye otyanno", english: "good afternoon/evening (how did you spend your day)" },
-                { luganda: "weebale", english: "thank you" },
-                { luganda: "weebale nyo", english: "thank you very much" },
-                { luganda: "kale", english: "you're welcome / ok" },
-                { luganda: "ki kati", english: "what's up / hi" },
-                { luganda: "ogamba ki", english: "what are you saying / what's new" },
-                { luganda: "weraba", english: "goodbye (singular)" },
-                { luganda: "mweraba", english: "goodbye (plural)" }
-            ],
-            "animals": [
-                { luganda: "ente", english: "cow" },
-                { luganda: "embuzi", english: "goat" },
-                { luganda: "endiga", english: "sheep" },
-                { luganda: "embwa", english: "dog" },
-                { luganda: "akamyu", english: "rabbit" },
-                { luganda: "enkoko", english: "chicken" },
-                { luganda: "enseeneene", english: "grasshoppers" },
-                { luganda: "omusota", english: "snake" },
-                { luganda: "enkula", english: "rhino" },
-                { luganda: "enjovu", english: "elephant" },
-                { luganda: "empologoma", english: "lion" }
-            ],
-            "numbers": [
-                { luganda: "emu", english: "one" },
-                { luganda: "biri", english: "two" },
-                { luganda: "ssatu", english: "three" },
-                { luganda: "nnya", english: "four" },
-                { luganda: "ttaano", english: "five" },
-                { luganda: "mukaaga", english: "six" },
-                { luganda: "mushanju", english: "seven" },
-                { luganda: "munaana", english: "eight" },
-                { luganda: "mwenda", english: "nine" },
-                { luganda: "kkumi", english: "ten" }
-            ],
-            "house": [
-                { luganda: "ennyumba", english: "house" },
-                { luganda: "omulyango", english: "door" },
-                { luganda: "eddirisa", english: "window" },
-                { luganda: "ekisenge", english: "room / wall" },
-                { luganda: "ekitanda", english: "bed" },
-                { luganda: "entebe", english: "chair / seat" },
-                { luganda: "emmeeza", english: "table" },
-                { luganda: "ekinaaba", english: "bathroom" },
-                { luganda: "ekiyungu", english: "kitchen" },
-                { luganda: "akatoogo", english: "toilet" }
-            ],
-            "outside": [
-                { luganda: "ekkubo", english: "road / path" },
-                { luganda: "omuti", english: "tree" },
-                { luganda: "ebimuli", english: "flowers" },
-                { luganda: "omusana", english: "sun / sunshine" },
-                { luganda: "enkuba", english: "rain" },
-                { luganda: "emmeeri", english: "boat / ship" },
-                { luganda: "enyonyi", english: "bird / airplane" },
-                { luganda: "emmotoka", english: "car" },
-                { luganda: "eggaali", english: "bicycle" },
-                { luganda: "akasaale", english: "arrow (points to directions layout)" }
-            ],
-            "new words": [
-                { luganda: "kiki", english: "what is it?" },
-                { luganda: "tuba", english: "we are" },
-                { luganda: "manya", english: "know" },
-                { luganda: "ndowooza", english: "I think" },
-                { luganda: "kola", english: "do / work" },
-                { luganda: "genda", english: "go" },
-                { luganda: "jja", english: "come" },
-                { luganda: "lya", english: "eat" },
-                { luganda: "nywa", english: "drink" },
-                { luganda: "webaka", english: "sleep" },
-                { luganda: "zuukuka", english: "wake up" },
-                { luganda: "kirungi", english: "it is good" }
-            ]
-        };
+        let masterDatabase = {};
+        let activeList = [];
+        let shuffledDeck = [];
+        let currentCardItem = null;
 
-        let currentCategory = "small words";
-        let shuffledWords = [];
-        let currentIndex = 0;
+        const flashcard = document.getElementById('flashcard');
+        const nextBtn = document.getElementById('nextBtn');
+        const reviewBtn = document.getElementById('reviewBtn');
+        const lugandaFront = document.getElementById('lugandaFront');
+        const lugandaBack = document.getElementById('lugandaBack');
+        const englishBack = document.getElementById('englishBack');
+        const categorySelect = document.getElementById('categorySelect');
+        const progressCounter = document.getElementById('progressCounter');
 
-        function shuffleArray(array) {
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        async function loadMasterData() {
+            const debugBox = document.getElementById('networkDebugger');
+            let rawText = "";
+            
+            try {
+                const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfnLZbNhfSiw-xsabAsZW-tvg96yKPRWNnZ9oZu-is1iTpgogFqlBMoIk6H1WM9w/pub?output=csv';
+                
+                debugBox.innerHTML = "Status: Fetching from Cloud...";
+                const response = await fetch(`${cloudUrl}&t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error("Cloud fetch failed status");
+                rawText = await response.text();
+                
+                // Parse the cloud text into our database structure
+                parseAndStoreCSV(rawText);
+                
+            } catch (error) {
+                console.log("Cloud unavailable. Checking local storage fallback...", error);
+                const storedData = localStorage.getItem('cachedLugandaWords');
+                
+                if (storedData) {
+                    masterDatabase = JSON.parse(storedData);
+                    instantiateCategorySelection();
+                } else {
+                    lugandaFront.innerText = "Offline: No saved data found";
+                    console.error("Both cloud and local fallback storage empty.");
+                }
             }
-            return newArray;
         }
 
-        function initCategory() {
-            const savedState = localStorage.getItem(`luganda_progress_${currentCategory}`);
+        function parseAndStoreCSV(text) {
+            masterDatabase = {}; 
+            const rows = text.split(/[\r\n]+/);
             
-            if (savedState) {
-                const state = JSON.parse(savedState);
-                shuffledWords = state.words;
-                currentIndex = state.index;
+            for (let i = 0; i < rows.length; i++) {
+                const currentRow = rows[i].trim();
+                if (!currentRow) continue; 
+                
+                const columns = currentRow.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (columns.length < 3) continue; 
+                
+                const rawCategory = columns[0].replace(/^"|"$/g, '').trim(); 
+                const category = rawCategory.toLowerCase();
+                
+                const lugandaWord = columns[1].replace(/^"|"$/g, '').trim();
+                const englishWord = columns[2].replace(/^"|"$/g, '').trim();
+                
+                if (category === 'category') continue;
+                
+                if (!masterDatabase[category]) {
+                    masterDatabase[category] = [];
+                }
+                
+                masterDatabase[category].push({ 
+                    luganda: lugandaWord, 
+                    english: englishWord 
+                });
+            }
+            
+            // Save to browser memory for complete offline access
+            localStorage.setItem('cachedLugandaWords', JSON.stringify(masterDatabase));
+            instantiateCategorySelection();
+        }
+
+        function instantiateCategorySelection() {
+            let currentSelection = categorySelect.value.toLowerCase();
+            if (masterDatabase[currentSelection]) {
+                switchCategory(currentSelection);
             } else {
-                shuffledWords = shuffleArray(wordData[currentCategory]);
-                currentIndex = 0;
-                saveState();
+                const fallback = Object.keys(masterDatabase)[0];
+                if (fallback) switchCategory(fallback);
+            }
+        }
+        
+        function switchCategory(categoryKey) {
+            const targetKey = categoryKey.toLowerCase();
+            if (!masterDatabase[targetKey]) return;
+            
+            activeList = masterDatabase[targetKey];
+            shuffledDeck = [];
+            currentCardItem = null;
+            
+            getNewWord();
+        }
+
+        function updateProgressUI() {
+            if (activeList.length === 0) {
+                progressCounter.textContent = "0/0";
+                return;
+            }
+            let remainingCount = shuffledDeck.length;
+            if (currentCardItem) {
+                remainingCount += 1;
             }
             
-            updateCard();
+            progressCounter.textContent = `${remainingCount}/${activeList.length}`;
         }
 
-        function saveState() {
-            const state = {
-                words: shuffledWords,
-                index: currentIndex
-            };
-            localStorage.setItem(`luganda_progress_${currentCategory}`, JSON.stringify(state));
-        }
-
-        function updateCard() {
-            if (shuffledWords.length === 0) return;
+        function getNewWord() {
+            if (activeList.length === 0) {
+                lugandaFront.textContent = "Empty Deck";
+                lugandaBack.textContent = "Empty Deck";
+                englishBack.textContent = "No words found in this category.";
+                updateProgressUI();
+                return;
+            }
             
-            const card = document.getElementById('card');
-            card.classList.remove('flipped');
+            flashcard.classList.remove('is-flipped');
             
             setTimeout(() => {
-                const currentWord = shuffledWords[currentIndex];
-                document.getElementById('frontText').innerText = currentWord.luganda;
-                document.getElementById('backText').innerText = currentWord.english;
-                document.getElementById('progressText').innerText = `${currentIndex + 1}/${shuffledWords.length}`;
-            }, card.classList.contains('flipped') ? 200 : 0);
+                if (shuffledDeck.length === 0) {
+                    shuffledDeck = [...activeList]; 
+                }
+                
+                let randomIndex = Math.floor(Math.random() * shuffledDeck.length);
+                currentCardItem = shuffledDeck.splice(randomIndex, 1)[0];
+                
+                lugandaFront.textContent = currentCardItem.luganda;
+                lugandaBack.textContent = currentCardItem.luganda;
+                englishBack.textContent = currentCardItem.english;
+                
+                updateProgressUI();
+            }, 200);
         }
 
-        function flipCard() {
-            document.getElementById('card').classList.toggle('flipped');
-        }
-
-        function nextWord(event) {
-            if (event) event.stopPropagation();
-            
-            currentIndex++;
-            if (currentIndex >= shuffledWords.length) {
-                currentIndex = 0;
-                shuffledWords = shuffleArray(wordData[currentCategory]);
-            }
-            
-            saveState();
-            updateCard();
-        }
-
-        function switchCategory(newCategory) {
-            currentCategory = newCategory;
-            initCategory();
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            initCategory();
+        nextBtn.addEventListener('click', () => {
+            currentCardItem = null; 
+            getNewWord();
         });
 
-        // REGISTER SERVICE WORKER WITH SANDBOXED SCOPE
+        reviewBtn.addEventListener('click', () => {
+            if (currentCardItem) {
+                shuffledDeck.push(currentCardItem); 
+                currentCardItem = null;
+            }
+            getNewWord();
+        });
+
+        flashcard.addEventListener('click', () => {
+            flashcard.classList.toggle('is-flipped');
+        });
+
+        window.addEventListener('DOMContentLoaded', loadMasterData);
+
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js', { scope: './' })
-                    .then((reg) => console.log('Service Worker registered with scope:', reg.scope))
-                    .catch((err) => console.log('Service Worker registration failed:', err));
-            });
+            navigator.serviceWorker.register('sw.js');
         }
     </script>
 </body>
