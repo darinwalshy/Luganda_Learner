@@ -1,5 +1,5 @@
 const APP_PREFIX = 'luganda-learner-';
-const CACHE_NAME = `${APP_PREFIX}v1.7-Offline-Fix`;
+const CACHE_NAME = `${APP_PREFIX}v1.9-Offline-Fix`;
 const REPO_NAME = '/Luganda_Learner';
 
 const ASSETS = [
