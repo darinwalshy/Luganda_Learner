@@ -1,4 +1,5 @@
-const CACHE_NAME = 'luganda-learner-v1.7-Offline-Fix';
+const APP_PREFIX = 'luganda-learner-';
+const CACHE_NAME = `${APP_PREFIX}v1.7-Offline-Fix`;
 const REPO_NAME = '/Luganda_Learner';
 
 const ASSETS = [
@@ -17,12 +18,14 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event
+// Activate event - Safely scopes deletions to ONLY this app's prefixes
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+        keys
+          .filter(key => key.startsWith(APP_PREFIX) && key !== CACHE_NAME)
+          .map(key => caches.delete(key))
       );
     })
   );
