@@ -270,7 +270,7 @@
     </main>
 
     <footer>
-        App Version: v1.7-Storage-Fallback
+        App Version: v1.7-Storage-Isolated
     </footer>
 
     <script>
@@ -431,8 +431,15 @@
 
         window.addEventListener('DOMContentLoaded', loadMasterData);
 
+        // Dynamic Subfolder Namespace Scope Isolation
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+            window.addEventListener('load', () => {
+                const dynamicScope = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+
+                navigator.serviceWorker.register('./sw.js', { scope: dynamicScope })
+                    .then((reg) => console.log('Luganda Learner Service Worker registered with scope:', reg.scope))
+                    .catch((err) => console.log('Luganda Learner Service Worker registration failed:', err));
+            });
         }
     </script>
 </body>
