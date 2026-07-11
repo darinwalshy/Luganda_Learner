@@ -1,5 +1,5 @@
 const APP_PREFIX = 'luganda-learner-';
-const CACHE_NAME = `${APP_PREFIX}v1.9.1-BackButton`;
+const CACHE_NAME = `${APP_PREFIX}v2.0-BackButton`;
 const REPO_NAME = '/Luganda_Learner';
 
 const ASSETS = [
