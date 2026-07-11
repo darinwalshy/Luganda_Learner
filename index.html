@@ -171,6 +171,12 @@
             gap: 14px;
         }
 
+        .secondary-row {
+            display: flex;
+            gap: 14px;
+            width: 100%;
+        }
+
         /* BASE BUTTON RESET */
         .btn-base {
             width: 100%;
@@ -192,7 +198,7 @@
         .btn-primary {
             background-color: #10b981;
             color: white;
-            padding: 36px; 
+            padding: 24px; 
             font-size: 1.25rem; 
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
         }
@@ -201,7 +207,7 @@
             background-color: #059669;
         }
 
-        /* SECONDARY ACTION: Review Again */
+        /* SECONDARY ACTIONS */
         .btn-secondary {
             background-color: #e2e8f0;
             color: #475569;
@@ -213,6 +219,14 @@
         .btn-secondary:hover {
             background-color: #cbd5e1;
             color: #1e293b;
+        }
+
+        /* Style when back button has no history */
+        .btn-secondary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background-color: #e2e8f0;
+            color: #94a3b8;
         }
 
         /* Version Badge Styling */
@@ -259,22 +273,27 @@
 
         <div class="controls">
             <button id="nextBtn" class="btn-base btn-primary">Next Word &rarr;</button>
-            <button id="reviewBtn" class="btn-base btn-secondary">Review again</button>
+            <div class="secondary-row">
+                <button id="backBtn" class="btn-base btn-secondary" disabled>&larr; Back</button>
+                <button id="reviewBtn" class="btn-base btn-secondary">Review again</button>
+            </div>
         </div>
     </main>
 
     <footer>
-        App Version: v1.9-Back-Button
+        App Version: v2.0-With-Back-Button
     </footer>
 
     <script>
         let masterDatabase = {};
         let activeList = [];
         let shuffledDeck = [];
+        let cardHistory = []; // Tracks past words viewed this session
         let currentCardItem = null;
 
         const flashcard = document.getElementById('flashcard');
         const nextBtn = document.getElementById('nextBtn');
+        const backBtn = document.getElementById('backBtn');
         const reviewBtn = document.getElementById('reviewBtn');
         const lugandaFront = document.getElementById('lugandaFront');
         const lugandaBack = document.getElementById('lugandaBack');
@@ -283,30 +302,22 @@
         const progressCounter = document.getElementById('progressCounter');
 
         async function loadMasterData() {
-            const debugBox = document.getElementById('networkDebugger');
             let rawText = "";
-            
             try {
                 const cloudUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfnLZbNhfSiw-xsabAsZW-tvg96yKPRWNnZ9oZu-is1iTpgogFqlBMoIk6H1WM9w/pub?output=csv';
-                
-                debugBox.innerHTML = "Status: Fetching from Cloud...";
                 const response = await fetch(`${cloudUrl}&t=${new Date().getTime()}`);
-                if (!response.ok) throw new Error("Cloud fetch failed status");
+                if (!response.ok) throw new Error("Cloud fetch failed");
                 rawText = await response.text();
-                
                 parseAndStoreCSV(rawText);
-                
             } catch (error) {
                 console.log("Cloud unavailable. Checking local storage fallback...", error);
                 const storedData = localStorage.getItem('cachedLugandaWords');
-                
                 if (storedData) {
                     masterDatabase = JSON.parse(storedData);
                     buildCategoryDropdown();
                     instantiateCategorySelection();
                 } else {
                     lugandaFront.innerText = "Offline: No saved data found";
-                    console.error("Both cloud and local fallback storage empty.");
                 }
             }
         }
@@ -331,11 +342,7 @@
                 if (!masterDatabase[category]) {
                     masterDatabase[category] = [];
                 }
-                
-                masterDatabase[category].push({ 
-                    luganda: lugandaWord, 
-                    english: englishWord 
-                });
+                masterDatabase[category].push({ luganda: lugandaWord, english: englishWord });
             }
             
             localStorage.setItem('cachedLugandaWords', JSON.stringify(masterDatabase));
@@ -346,15 +353,10 @@
         function buildCategoryDropdown() {
             categorySelect.innerHTML = "";
             const categories = Object.keys(masterDatabase);
-            
             if (categories.length === 0) {
-                const opt = document.createElement('option');
-                opt.value = "";
-                opt.textContent = "No categories found";
-                categorySelect.appendChild(opt);
+                categorySelect.innerHTML = '<option value="">No categories found</option>';
                 return;
             }
-
             categories.forEach(category => {
                 const opt = document.createElement('option');
                 opt.value = category;
@@ -378,11 +380,10 @@
         
         function switchCategory(categoryKey) {
             if (!masterDatabase[categoryKey]) return;
-            
             activeList = masterDatabase[categoryKey];
             shuffledDeck = [];
+            cardHistory = [];
             currentCardItem = null;
-            
             getNewWord();
         }
 
@@ -392,43 +393,62 @@
                 return;
             }
             let remainingCount = shuffledDeck.length;
-            if (currentCardItem) {
-                remainingCount += 1;
-            }
-            
+            if (currentCardItem) remainingCount += 1;
             progressCounter.textContent = `${remainingCount}/${activeList.length}`;
+            
+            // Enable/disable back button based on whether history exists
+            backBtn.disabled = cardHistory.length === 0;
+        }
+
+        function displayCard(card) {
+            flashcard.classList.remove('is-flipped');
+            setTimeout(() => {
+                lugandaFront.textContent = card.luganda;
+                lugandaBack.textContent = card.luganda;
+                englishBack.textContent = card.english;
+                updateProgressUI();
+            }, 200);
         }
 
         function getNewWord() {
             if (activeList.length === 0) {
                 lugandaFront.textContent = "Empty Deck";
                 lugandaBack.textContent = "Empty Deck";
-                englishBack.textContent = "No words found in this category.";
+                englishBack.textContent = "No words found.";
                 updateProgressUI();
                 return;
             }
             
-            flashcard.classList.remove('is-flipped');
+            // Push current card to history before finding a new one
+            if (currentCardItem) {
+                cardHistory.push(currentCardItem);
+            }
             
-            setTimeout(() => {
-                if (shuffledDeck.length === 0) {
-                    shuffledDeck = [...activeList]; 
-                }
-                
-                let randomIndex = Math.floor(Math.random() * shuffledDeck.length);
-                currentCardItem = shuffledDeck.splice(randomIndex, 1)[0];
-                
-                lugandaFront.textContent = currentCardItem.luganda;
-                lugandaBack.textContent = currentCardItem.luganda;
-                englishBack.textContent = currentCardItem.english;
-                
-                updateProgressUI();
-            }, 200);
+            if (shuffledDeck.length === 0) {
+                shuffledDeck = [...activeList]; 
+            }
+            
+            let randomIndex = Math.floor(Math.random() * shuffledDeck.length);
+            currentCardItem = shuffledDeck.splice(randomIndex, 1)[0];
+            
+            displayCard(currentCardItem);
         }
 
         nextBtn.addEventListener('click', () => {
-            currentCardItem = null; 
             getNewWord();
+        });
+
+        backBtn.addEventListener('click', () => {
+            if (cardHistory.length === 0) return;
+            
+            // Put current card back into the shuffling deck so it's not lost
+            if (currentCardItem) {
+                shuffledDeck.push(currentCardItem);
+            }
+            
+            // Pop the last card from history and make it active
+            currentCardItem = cardHistory.pop();
+            displayCard(currentCardItem);
         });
 
         reviewBtn.addEventListener('click', () => {
@@ -448,10 +468,9 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const dynamicScope = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-
                 navigator.serviceWorker.register('./sw.js', { scope: dynamicScope })
-                    .then((reg) => console.log('Luganda Learner Service Worker registered with scope:', reg.scope))
-                    .catch((err) => console.log('Luganda Learner Service Worker registration failed:', err));
+                    .then((reg) => console.log('Service Worker registered.'))
+                    .catch((err) => console.log('Service Worker registration failed.', err));
             });
         }
     </script>
