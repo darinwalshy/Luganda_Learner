@@ -1,6 +1,9 @@
-const APP_PREFIX = 'luganda-learner-';
-const CACHE_NAME = `${APP_PREFIX}v2.0-BackButton`;
-const REPO_NAME = '/Luganda_Learner';
+// ==========================================
+// 🛠️ UNIQUE IDENTIFIERS FOR THIS APP
+// ==========================================
+const APP_PREFIX = 'luganda_learner_v3.0_'; // Strict system naming rule
+const CACHE_NAME = APP_PREFIX + 'cache';
+const REPO_NAME = '/Luganda_Learner';       // Exact repository name case-sensitive
 
 const ASSETS = [
   `${REPO_NAME}/`,
@@ -23,18 +26,24 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys
-          .filter(key => key.startsWith(APP_PREFIX) && key !== CACHE_NAME)
-          .map(key => caches.delete(key))
+        keys.map((key) => {
+          // Clear older versions of Luganda Learner caches specifically
+          if (key.startsWith('luganda_learner_v') && key !== CACHE_NAME) {
+            console.log(`[Service Worker] Cleared old Luganda cache: ${key}`);
+            return caches.delete(key);
+          }
+        })
       );
     })
   );
 });
 
-// Fetch event: NETWORK FIRST with immediate cache fallback
+// Fetch event: BOUNDED NETWORK FIRST with multi-app isolation
 self.addEventListener('fetch', (event) => {
-  // Only intercept requests for our own application assets
-  if (event.request.url.includes(self.location.origin)) {
+  const requestUrl = event.request.url;
+
+  // Strict local boundary check: Origin matching AND explicit repository subfolder isolation
+  if (requestUrl.includes(self.location.origin) && requestUrl.includes(REPO_NAME)) {
     event.respondWith(
       fetch(event.request).catch(() => {
         return caches.match(event.request).then((response) => {
