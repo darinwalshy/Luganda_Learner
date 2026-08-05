@@ -22,6 +22,7 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            padding-bottom: 90px; /* Leave space for FAB */
         }
 
         header {
@@ -221,12 +222,144 @@
             color: #1e293b;
         }
 
-        /* Style when back button has no history */
         .btn-secondary:disabled {
             opacity: 0.4;
             cursor: not-allowed;
             background-color: #e2e8f0;
             color: #94a3b8;
+        }
+
+        /* FLOATING ACTION BUTTON (FAB) */
+        .fab-add {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 14px 22px;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(30, 58, 138, 0.35);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .fab-add:active {
+            transform: scale(0.95);
+        }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.is-active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            background-color: white;
+            width: 100%;
+            max-width: 440px;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 28px 24px 32px 24px;
+            box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.is-active .modal-card {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #1e3a8a;
+            font-size: 1.4rem;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 2px solid #cbd5e1;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: #1e3a8a;
+        }
+
+        .status-banner {
+            font-size: 0.9rem;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .status-banner.success {
+            display: block;
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-banner.info {
+            display: block;
+            background-color: #e0f2fe;
+            color: #075985;
         }
 
         /* Version Badge Styling */
@@ -241,8 +374,6 @@
     </style>
 </head>
 <body>
-
-    <div id="networkDebugger" style="display: none;"></div>
 
     <header>
         <h1>Luganda Learner</h1>
@@ -280,15 +411,47 @@
         </div>
     </main>
 
+    <!-- FLOATING ACTION BUTTON -->
+    <button class="fab-add" id="openModalBtn">+ Add Word</button>
+
+    <!-- ADD WORD MODAL -->
+    <div class="modal-overlay" id="addWordModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Note New Word</h2>
+                <button class="btn-close" id="closeModalBtn">&times;</button>
+            </div>
+            
+            <div id="statusBanner" class="status-banner"></div>
+
+            <form id="addWordForm">
+                <div class="form-group">
+                    <label for="lugandaInput">Luganda Word / Phrase</label>
+                    <input type="text" id="lugandaInput" class="form-input" placeholder="e.g. Otiya" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="englishInput">English Translation</label>
+                    <input type="text" id="englishInput" class="form-input" placeholder="e.g. How are you" required autocomplete="off">
+                </div>
+                <button type="submit" id="saveWordBtn" class="btn-base btn-primary" style="padding: 16px; margin-top: 10px;">
+                    Save to Staging Sheet
+                </button>
+            </form>
+        </div>
+    </div>
+
     <footer>
-        App Version: v2.0-Test-Update
+        App Version: v3.0-StagingIngest
     </footer>
 
     <script>
+        // CONFIGURATION
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5s5graaib7c09HAP5UHj6FgTsgSNca-jqeAHdW_7jUp4HMTHbhYNALaGTgxKKAXYiLQ/exec';
+
         let masterDatabase = {};
         let activeList = [];
         let shuffledDeck = [];
-        let cardHistory = []; // Tracks past words viewed this session
+        let cardHistory = [];
         let currentCardItem = null;
 
         const flashcard = document.getElementById('flashcard');
@@ -301,6 +464,17 @@
         const categorySelect = document.getElementById('categorySelect');
         const progressCounter = document.getElementById('progressCounter');
 
+        // Modal Elements
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const addWordModal = document.getElementById('addWordModal');
+        const addWordForm = document.getElementById('addWordForm');
+        const lugandaInput = document.getElementById('lugandaInput');
+        const englishInput = document.getElementById('englishInput');
+        const statusBanner = document.getElementById('statusBanner');
+        const saveWordBtn = document.getElementById('saveWordBtn');
+
+        // Flashcard Logic
         async function loadMasterData() {
             let rawText = "";
             try {
@@ -395,8 +569,6 @@
             let remainingCount = shuffledDeck.length;
             if (currentCardItem) remainingCount += 1;
             progressCounter.textContent = `${remainingCount}/${activeList.length}`;
-            
-            // Enable/disable back button based on whether history exists
             backBtn.disabled = cardHistory.length === 0;
         }
 
@@ -419,7 +591,6 @@
                 return;
             }
             
-            // Push current card to history before finding a new one
             if (currentCardItem) {
                 cardHistory.push(currentCardItem);
             }
@@ -434,19 +605,108 @@
             displayCard(currentCardItem);
         }
 
-        nextBtn.addEventListener('click', () => {
-            getNewWord();
+        // Modal Controls
+        openModalBtn.addEventListener('click', () => {
+            addWordModal.classList.add('is-active');
+            lugandaInput.focus();
         });
+
+        closeModalBtn.addEventListener('click', () => {
+            addWordModal.classList.remove('is-active');
+            statusBanner.className = 'status-banner';
+        });
+
+        // STAGING INGEST & SYNC LOGIC
+        addWordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const lugandaVal = lugandaInput.value.trim();
+            const englishVal = englishInput.value.trim();
+            if (!lugandaVal || !englishVal) return;
+
+            const newEntry = { luganda: lugandaVal, english: englishVal };
+
+            saveWordBtn.disabled = true;
+            saveWordBtn.textContent = "Saving...";
+
+            if (navigator.onLine) {
+                const success = await sendToGoogleSheet(newEntry);
+                if (success) {
+                    showBanner("Saved to Google Sheet!", "success");
+                    addWordForm.reset();
+                } else {
+                    // Fallback to queue if network post failed
+                    queueLocally(newEntry);
+                    showBanner("Network error. Saved locally (will auto-sync).", "info");
+                    addWordForm.reset();
+                }
+            } else {
+                queueLocally(newEntry);
+                showBanner("Saved locally (Offline). Will auto-sync when online.", "info");
+                addWordForm.reset();
+            }
+
+            saveWordBtn.disabled = false;
+            saveWordBtn.textContent = "Save to Staging Sheet";
+        });
+
+        async function sendToGoogleSheet(dataPayload) {
+            try {
+                // Apps Script requires mode: 'no-cors' for web app redirects
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataPayload)
+                });
+                return true;
+            } catch (err) {
+                console.error("Submission failed:", err);
+                return false;
+            }
+        }
+
+        function queueLocally(entry) {
+            let queue = JSON.parse(localStorage.getItem('pendingLugandaSync')) || [];
+            queue.push(entry);
+            localStorage.setItem('pendingLugandaSync', JSON.stringify(queue));
+        }
+
+        async function processPendingQueue() {
+            if (!navigator.onLine) return;
+            let queue = JSON.parse(localStorage.getItem('pendingLugandaSync')) || [];
+            if (queue.length === 0) return;
+
+            console.log(`Syncing ${queue.length} pending word(s) to Staging sheet...`);
+            let remainingQueue = [];
+
+            for (const item of queue) {
+                const success = await sendToGoogleSheet(item);
+                if (!success) {
+                    remainingQueue.push(item);
+                }
+            }
+
+            localStorage.setItem('pendingLugandaSync', JSON.stringify(remainingQueue));
+            if (remainingQueue.length === 0) {
+                console.log("All offline entries successfully synced to Google Sheet!");
+            }
+        }
+
+        function showBanner(msg, type) {
+            statusBanner.textContent = msg;
+            statusBanner.className = `status-banner ${type}`;
+            setTimeout(() => {
+                statusBanner.className = 'status-banner';
+            }, 4000);
+        }
+
+        // Event Listeners
+        nextBtn.addEventListener('click', getNewWord);
 
         backBtn.addEventListener('click', () => {
             if (cardHistory.length === 0) return;
-            
-            // Put current card back into the shuffling deck so it's not lost
-            if (currentCardItem) {
-                shuffledDeck.push(currentCardItem);
-            }
-            
-            // Pop the last card from history and make it active
+            if (currentCardItem) shuffledDeck.push(currentCardItem);
             currentCardItem = cardHistory.pop();
             displayCard(currentCardItem);
         });
@@ -463,8 +723,15 @@
             flashcard.classList.toggle('is-flipped');
         });
 
-        window.addEventListener('DOMContentLoaded', loadMasterData);
+        // Network status & Init
+        window.addEventListener('online', processPendingQueue);
 
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMasterData();
+            processPendingQueue();
+        });
+
+        // Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const dynamicScope = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);

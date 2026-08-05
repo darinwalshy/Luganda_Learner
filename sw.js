@@ -1,7 +1,7 @@
 // ==========================================
 // 🛠️ UNIQUE IDENTIFIERS FOR THIS APP
 // ==========================================
-const APP_PREFIX = 'luganda_learner_v3.1_'; // Strict system naming rule
+const APP_PREFIX = 'luganda_learner_v3.2_'; // Strict system naming rule
 const CACHE_NAME = APP_PREFIX + 'cache';
 const REPO_NAME = '/Luganda_Learner';       // Exact repository name case-sensitive
 
