@@ -441,12 +441,13 @@
     </div>
 
     <footer>
-        App Version: v3.3-StagingIngest
+        App Version: v3.4-StagingIngest
     </footer>
 
     <script>
         // CONFIGURATION
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5s5graaib7c09HAP5UHj6FgTsgSNca-jqeAHdW_7jUp4HMTHbhYNALaGTgxKKAXYiLQ/exec';
+        const AUTH_TOKEN = 'Luganda_Staging_Secret_9x82qL'; // <-- Must match Apps Script
 
         let masterDatabase = {};
         let activeList = [];
@@ -624,7 +625,11 @@
             const englishVal = englishInput.value.trim();
             if (!lugandaVal || !englishVal) return;
 
-            const newEntry = { luganda: lugandaVal, english: englishVal };
+            const newEntry = { 
+                luganda: lugandaVal, 
+                english: englishVal,
+                authToken: AUTH_TOKEN 
+            };
 
             saveWordBtn.disabled = true;
             saveWordBtn.textContent = "Saving...";
